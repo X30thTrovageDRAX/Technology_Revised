@@ -35,7 +35,7 @@ import java.util.Random;
 
 
 public class WorkbenchTransistorsBlockEntity extends BlockEntity implements MenuProvider {
-    private final ItemStackHandler itemHandler = new ItemStackHandler(4) {
+    private final ItemStackHandler itemHandler = new ItemStackHandler(6) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -112,14 +112,14 @@ public class WorkbenchTransistorsBlockEntity extends BlockEntity implements Menu
     private static void craftItem(WorkbenchTransistorsBlockEntity entity) {
         entity.itemHandler.extractItem(0, 1, false);
         entity.itemHandler.extractItem(1, 1, false);
+        entity.itemHandler.extractItem(2, 1, false);
         entity.itemHandler.extractItem(3, 1, false);
         entity.itemHandler.extractItem(4, 1, false);
         entity.itemHandler.extractItem(5, 1, false);
-        entity.itemHandler.extractItem(6, 1, false);
-        entity.itemHandler.getStackInSlot(6).hurt(1, new Random(), null);
+        entity.itemHandler.getStackInSlot(5).hurt(1, new Random(), null);
 
-        entity.itemHandler.setStackInSlot(6, new ItemStack(ModBlocks.COMPRESSED_SILICON.get(),
-                 entity.itemHandler.getStackInSlot(3).getCount() + 1));
+        entity.itemHandler.setStackInSlot(5, new ItemStack(ModBlocks.COMPRESSED_SILICON.get(),
+                 entity.itemHandler.getStackInSlot(6).getCount() + 1));
     }
 
     private static boolean hasRecipe(WorkbenchTransistorsBlockEntity entity) {

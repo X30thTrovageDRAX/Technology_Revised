@@ -1,5 +1,7 @@
 {
     "item.tech_revised.chipset_1": "Chipset (Basic)",
     "item.tech_revised.silicon": "Silicon",
-    "block.tech_revised.compressed_silicon": "Block of Compressed Silicon"
+    "item.tech_revised.transistor_1": "Transistor (Basic)",
+    "block.tech_revised.compressed_silicon": "Block of Compressed Silicon",
+    "block.tech_revised.workbench_transistors": "Transistors Workbench"
 }

@@ -16,11 +16,13 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -28,11 +30,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.swing.*;
 import java.util.Random;
 
 
 public class WorkbenchTransistorsBlockEntity extends BlockEntity implements MenuProvider {
-    private final ItemStackHandler itemHandler = new ItemStackHandler(5) {
+    private final ItemStackHandler itemHandler = new ItemStackHandler(8) {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
@@ -113,19 +116,18 @@ public class WorkbenchTransistorsBlockEntity extends BlockEntity implements Menu
         entity.itemHandler.extractItem(3, 1, false);
         entity.itemHandler.extractItem(4, 1, false);
         entity.itemHandler.extractItem(5, 1, false);
-        entity.itemHandler.getStackInSlot(5).hurt(1, new Random(), null);
 
-        entity.itemHandler.setStackInSlot(5, new ItemStack(ModBlocks.COMPRESSED_SILICON.get(),
-                 entity.itemHandler.getStackInSlot(5).getCount() + 1));
+        entity.itemHandler.setStackInSlot(7, new ItemStack(ModItems.TRANSISTOR_1.get(),
+                 entity.itemHandler.getStackInSlot(7).getCount() + 1));
     }
 
     private static boolean hasRecipe(WorkbenchTransistorsBlockEntity entity) {
         boolean hasItemInFirstSlot = entity.itemHandler.getStackInSlot(0).getItem() == ModItems.SILICON.get();
         boolean hasItemInSecondSlot = entity.itemHandler.getStackInSlot(1).getItem() == ModItems.SILICON.get();
-        boolean hasItemInThirdSlot = entity.itemHandler.getStackInSlot(2).getItem() == ModItems.SILICON.get();
-        boolean hasItemInFourthSlot = entity.itemHandler.getStackInSlot(3).getItem() == ModItems.SILICON.get();
-        boolean hasItemInFifthSlot = entity.itemHandler.getStackInSlot(4).getItem() == ModItems.SILICON.get();
-        boolean hasItemInSixthSlot = entity.itemHandler.getStackInSlot(5).getItem() == ModItems.SILICON.get();
+        boolean hasItemInThirdSlot = entity.itemHandler.getStackInSlot(2).getItem() == Items.GOLD_INGOT.asItem();
+        boolean hasItemInFourthSlot = entity.itemHandler.getStackInSlot(3).getItem() == Items.GOLD_INGOT.asItem();
+        boolean hasItemInFifthSlot = entity.itemHandler.getStackInSlot(4).getItem() == Items.IRON_NUGGET.asItem();
+        boolean hasItemInSixthSlot = entity.itemHandler.getStackInSlot(5).getItem() == Items.IRON_NUGGET.asItem();
 
         return hasItemInFirstSlot && hasItemInSecondSlot && hasItemInThirdSlot && hasItemInFourthSlot && hasItemInFifthSlot && hasItemInSixthSlot;
     }

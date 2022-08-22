@@ -25,7 +25,7 @@ public class WorkbenchTransistorsMenu extends AbstractContainerMenu {
 
     public WorkbenchTransistorsMenu(int pContainerId, Inventory inv, BlockEntity entity) {
         super(ModMenuTypes.WORKBENCH_TRANSISTORS_MENU.get(), pContainerId);
-        checkContainerSize(inv, 6);
+        checkContainerSize(inv, 8);
         blockEntity = ((WorkbenchTransistorsBlockEntity) entity);
         this.level = inv.player.level;
 
@@ -39,7 +39,8 @@ public class WorkbenchTransistorsMenu extends AbstractContainerMenu {
             this.addSlot(new SlotItemHandler(handler, 3, 68, 16));
             this.addSlot(new SlotItemHandler(handler, 4, 68, 38));
             this.addSlot(new SlotItemHandler(handler, 5, 68, 60));
-            this.addSlot(new ModResultSlot(handler, 6, 92, 38));
+            this.addSlot(new SlotItemHandler(handler, 6, 90, 38));
+            this.addSlot(new ModResultSlot(handler, 7, 90, 38));
         });
     }
 
@@ -60,7 +61,7 @@ public class WorkbenchTransistorsMenu extends AbstractContainerMenu {
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
     // THIS YOU HAVE TO DEFINE!
-    private static final int TE_INVENTORY_SLOT_COUNT = 4;  // must be the number of slots you have!
+    private static final int TE_INVENTORY_SLOT_COUNT = 8;  // must be the number of slots you have!
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {

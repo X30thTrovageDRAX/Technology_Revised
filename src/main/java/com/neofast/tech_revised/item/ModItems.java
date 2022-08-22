@@ -14,6 +14,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> CHIPSET_1 = ITEMS.register("chipset_1",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+
+    public static final RegistryObject<Item> TRANSISTOR_1 = ITEMS.register("transistor_1",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
     public static final RegistryObject<Item> SILICON = ITEMS.register("silicon",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "items",
+  "pattern": [
+    "SSS",
+    "WWW",
+    "CCC"
+  ],
+  "key": {
+    "S": {
+      "item": "tech_revised:compressed_silicon"
+    },
+    "W": {
+      "item": "minecraft:log"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "result": {
+    "item": "tech_revised:pcb"
+  }
+}

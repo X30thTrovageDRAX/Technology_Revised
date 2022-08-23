@@ -2,6 +2,7 @@
 
  import com.neofast.tech_revised.TechRevised;
  import com.neofast.tech_revised.block.custom.WorkbenchTransistors;
+ import com.neofast.tech_revised.block.custom.WorkbenchTransistors_Basic;
  import com.neofast.tech_revised.item.ModItems;
  import net.minecraft.network.chat.Component;
  import net.minecraft.network.chat.TranslatableComponent;
@@ -35,6 +36,10 @@
 
      public static final RegistryObject<Block> WORKBENCH_TRANSISTORS = registerBlock("workbench_transistors",
              () -> new WorkbenchTransistors(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()),
+             CreativeModeTab.TAB_MISC);
+
+     public static final RegistryObject<Block> WORKBENCH_TRANSISTORS_BASIC = registerBlock("workbench_transistors_basic",
+             () -> new WorkbenchTransistors_Basic(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()),
              CreativeModeTab.TAB_MISC);
 
      private static <T extends Block> RegistryObject<T> registerBlockWithoutBlockItem(String name, Supplier<T> block) {

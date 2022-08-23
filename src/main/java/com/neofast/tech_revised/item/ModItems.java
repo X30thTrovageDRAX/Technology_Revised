@@ -16,10 +16,16 @@ public class ModItems {
     public static final RegistryObject<Item> SILICON = ITEMS.register("silicon",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
+    public static final RegistryObject<Item> PCB = ITEMS.register("pcb",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+
     public static final RegistryObject<Item> TRANSISTOR_2 = ITEMS.register("transistor_2",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
     public static final RegistryObject<Item> CHIPSET_1 = ITEMS.register("chipset_1",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+
+    public static final RegistryObject<Item> CHIPSET_2 = ITEMS.register("chipset_2",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
     public static final RegistryObject<Item> TRANSISTOR_0 = ITEMS.register("transistor_0",

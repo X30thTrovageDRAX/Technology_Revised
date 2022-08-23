@@ -5,6 +5,7 @@ import com.neofast.tech_revised.block.entity.ModBlockEntities;
 import com.neofast.tech_revised.item.ModItems;
 import com.neofast.tech_revised.screen.ModMenuTypes;
 import com.neofast.tech_revised.screen.WorkbenchTransistorsScreen;
+import com.neofast.tech_revised.screen.WorkbenchTransistors_BasicScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -40,9 +41,16 @@ public class TechRevised
         MinecraftForge.EVENT_BUS.register(this);
     }
     private void clientSetup(final FMLClientSetupEvent event) {
+        //Transistors Workbench (Faulty)
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.WORKBENCH_TRANSISTORS.get(), RenderType.translucent());
 
         MenuScreens.register(ModMenuTypes.WORKBENCH_TRANSISTORS_MENU.get(), WorkbenchTransistorsScreen::new);
+
+        //Transistors Workbench (Basic)
+
+        ItemBlockRenderTypes.setRenderLayer(ModBlocks.WORKBENCH_TRANSISTORS_BASIC.get(), RenderType.translucent());
+
+        MenuScreens.register(ModMenuTypes.WORKBENCH_TRANSISTORS_BASIC_MENU.get(), WorkbenchTransistors_BasicScreen::new);
     }
 
     private void setup(final FMLCommonSetupEvent event)

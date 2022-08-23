@@ -3,6 +3,7 @@ package com.neofast.tech_revised.block.entity.custom;
 import com.neofast.tech_revised.block.entity.ModBlockEntities;
 import com.neofast.tech_revised.item.ModItems;
 import com.neofast.tech_revised.screen.WorkbenchTransistorsMenu;
+import com.neofast.tech_revised.screen.WorkbenchTransistors_BasicMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.Nonnull;
 
 
-public class WorkbenchTransistorsBlockEntity extends BlockEntity implements MenuProvider {
+public class WorkbenchTransistors_BasicBlockEntity extends BlockEntity implements MenuProvider {
     private final ItemStackHandler itemHandler = new ItemStackHandler(8) {
         @Override
         protected void onContentsChanged(int slot) {
@@ -40,19 +41,19 @@ public class WorkbenchTransistorsBlockEntity extends BlockEntity implements Menu
 
     private LazyOptional<IItemHandler> lazyItemHandler = LazyOptional.empty();
 
-    public WorkbenchTransistorsBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
+    public WorkbenchTransistors_BasicBlockEntity(BlockPos pWorldPosition, BlockState pBlockState) {
         super(ModBlockEntities.WORKBENCH_TRANSISTORS.get(), pWorldPosition, pBlockState);
     }
 
     @Override
     public Component getDisplayName() {
-        return new TextComponent("Transistors Workbench (Faulty)");
+        return new TextComponent("Transistors Workbench (Basic)");
     }
 
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory pInventory, Player pPlayer) {
-        return new WorkbenchTransistorsMenu(pContainerId, pInventory, this);
+        return new WorkbenchTransistors_BasicMenu(pContainerId, pInventory, this);
     }
 
     @Nonnull
@@ -99,13 +100,13 @@ public class WorkbenchTransistorsBlockEntity extends BlockEntity implements Menu
     }
 
 
-    public static void tick(Level pLevel, BlockPos pPos, BlockState pState, WorkbenchTransistorsBlockEntity pBlockEntity) {
+    public static void tick(Level pLevel, BlockPos pPos, BlockState pState, WorkbenchTransistors_BasicBlockEntity pBlockEntity) {
         if(hasRecipe(pBlockEntity) && hasNotReachedStackLimit(pBlockEntity)) {
             craftItem(pBlockEntity);
         }
     }
 
-    private static void craftItem(WorkbenchTransistorsBlockEntity entity) {
+    private static void craftItem(WorkbenchTransistors_BasicBlockEntity entity) {
         entity.itemHandler.extractItem(0, 1, false);
         entity.itemHandler.extractItem(1, 1, false);
         entity.itemHandler.extractItem(2, 1, false);
@@ -113,22 +114,22 @@ public class WorkbenchTransistorsBlockEntity extends BlockEntity implements Menu
         entity.itemHandler.extractItem(4, 1, false);
         entity.itemHandler.extractItem(5, 1, false);
 
-        entity.itemHandler.setStackInSlot(7, new ItemStack(ModItems.TRANSISTOR_1.get(),
+        entity.itemHandler.setStackInSlot(7, new ItemStack(ModItems.TRANSISTOR_2.get(),
                 entity.itemHandler.getStackInSlot(7).getCount() + 1));
     }
 
-    private static boolean hasRecipe(WorkbenchTransistorsBlockEntity entity) {
+    private static boolean hasRecipe(WorkbenchTransistors_BasicBlockEntity entity) {
         boolean hasItemInFirstSlot = entity.itemHandler.getStackInSlot(0).getItem() == ModItems.SILICON.get();
-        boolean hasItemInSecondSlot = entity.itemHandler.getStackInSlot(1).getItem() == Items.GOLD_INGOT.asItem();
-        boolean hasItemInThirdSlot = entity.itemHandler.getStackInSlot(2).getItem() == Items.IRON_NUGGET.asItem();
+        boolean hasItemInSecondSlot = entity.itemHandler.getStackInSlot(1).getItem() == Items.GOLD_BLOCK.asItem();
+        boolean hasItemInThirdSlot = entity.itemHandler.getStackInSlot(2).getItem() == Items.IRON_BLOCK.asItem();
         boolean hasItemInFourthSlot = entity.itemHandler.getStackInSlot(3).getItem() == ModItems.SILICON.get();
-        boolean hasItemInFifthSlot = entity.itemHandler.getStackInSlot(4).getItem() == Items.GOLD_INGOT.asItem();
-        boolean hasItemInSixthSlot = entity.itemHandler.getStackInSlot(5).getItem() == Items.IRON_NUGGET.asItem();
+        boolean hasItemInFifthSlot = entity.itemHandler.getStackInSlot(4).getItem() == Items.GOLD_BLOCK.asItem();
+        boolean hasItemInSixthSlot = entity.itemHandler.getStackInSlot(5).getItem() == Items.IRON_BLOCK.asItem();
 
         return hasItemInFirstSlot && hasItemInSecondSlot && hasItemInThirdSlot && hasItemInFourthSlot && hasItemInFifthSlot && hasItemInSixthSlot;
     }
 
-    private static boolean hasNotReachedStackLimit(WorkbenchTransistorsBlockEntity entity) {
+    private static boolean hasNotReachedStackLimit(WorkbenchTransistors_BasicBlockEntity entity) {
         return entity.itemHandler.getStackInSlot(5).getCount() < entity.itemHandler.getStackInSlot(5).getMaxStackSize();
     }
 }

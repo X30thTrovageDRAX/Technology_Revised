@@ -1,10 +1,13 @@
 {
     "item.tech_revised.chipset_1": "Chipset (Basic)",
+    "item.tech_revised.chipset_2": "Chipset (Advanced)",
     "block.tech_revised.iron_block_slab": "Iron Block Slab",
+    "item.tech_revised.pcb": "Printed Circuit Board",
     "item.tech_revised.silicon": "Silicon",
     "item.tech_revised.transistor_0": "Transistor (Faulty)",
     "item.tech_revised.transistor_1": "Transistor (Basic)",
     "item.tech_revised.transistor_2": "Transistor (Advanced)",
     "block.tech_revised.compressed_silicon": "Block of Compressed Silicon",
-    "block.tech_revised.workbench_transistors": "Transistors Workbench (Basic)"
+    "block.tech_revised.workbench_transistors": "Transistors Workbench (Faulty)",
+    "block.tech_revised.workbench_transistors_basic": "Transistors Workbench (Basic)"
 }

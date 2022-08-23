@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "items",
+  "pattern": [
+    "###",
+    "ICI",
+    "SSS"
+  ],
+  "key": {
+    "#": {
+      "item": "tech_revised:compressed_silicon"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "tech_revised:chipset_1",
+    },
+    "S": {
+      "item": "tech_revised:iron_block_slab"
+    }
+  },
+  "result": {
+    "item": "tech_revised:transistor_0"
+  }
+}

@@ -28,6 +28,11 @@
              () -> new Block(BlockBehaviour.Properties.of(Material.METAL)
                      .strength(9f).requiresCorrectToolForDrops()), CreativeModeTab.TAB_MISC);
 
+     public static final RegistryObject<Block> IRON_BLOCK_SLAB = registerBlock("iron_block_slab",
+             () -> new SlabBlock(BlockBehaviour.Properties.of(Material.METAL)
+                     .strength(9f).requiresCorrectToolForDrops()), CreativeModeTab.TAB_MISC);
+
+
      public static final RegistryObject<Block> WORKBENCH_TRANSISTORS = registerBlock("workbench_transistors",
              () -> new WorkbenchTransistors(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()),
              CreativeModeTab.TAB_MISC);

@@ -1,5 +1,6 @@
 {
     "item.tech_revised.chipset_1": "Chipset (Basic)",
+    "block.tech_revised.iron_block_slab": "Iron Block Slab",
     "item.tech_revised.silicon": "Silicon",
     "item.tech_revised.transistor_0": "Transistor (Faulty)",
     "item.tech_revised.transistor_1": "Transistor (Basic)",

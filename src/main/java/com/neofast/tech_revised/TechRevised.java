@@ -5,7 +5,6 @@ import com.neofast.tech_revised.block.entity.ModBlockEntities;
 import com.neofast.tech_revised.item.ModItems;
 import com.neofast.tech_revised.screen.ModMenuTypes;
 import com.neofast.tech_revised.screen.WorkbenchTransistorsScreen;
-import com.neofast.tech_revised.util.ModItemProperties;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -42,8 +41,6 @@ public class TechRevised
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.WORKBENCH_TRANSISTORS.get(), RenderType.translucent());
-
-        ModItemProperties.addCustomItemProperties();
 
         MenuScreens.register(ModMenuTypes.WORKBENCH_TRANSISTORS_MENU.get(), WorkbenchTransistorsScreen::new);
     }

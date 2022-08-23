@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "items",
+  "pattern": [
+    "##",
+    "KK",
+    "@@"
+  ],
+  "key": {
+    "#": {
+      "item": "tech_revised:silicon"
+    },
+    "K": {
+      "item": "minecraft:gold_nugget"
+    },
+    "@": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "item": "tech_revised:transistor_0"
+  }
+}

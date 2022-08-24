@@ -8,14 +8,12 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.Tags;
 
-public class WorkbenchTransistors_BasicScreen extends AbstractContainerScreen<WorkbenchTransistors_BasicMenu> {
+public class HDD_27KB_Screen extends AbstractContainerScreen<HDD_27KB_Menu> {
     private static final ResourceLocation TEXTURE =
-            new ResourceLocation(TechRevised.MOD_ID, "textures/gui/workbench_transistors_gui.png");
+            new ResourceLocation(TechRevised.MOD_ID, "textures/gui/hdd_27kb_gui.png");
 
-    public WorkbenchTransistors_BasicScreen(WorkbenchTransistors_BasicMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
+    public HDD_27KB_Screen(HDD_27KB_Menu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
     }
 

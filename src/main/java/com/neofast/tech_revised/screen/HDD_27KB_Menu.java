@@ -1,8 +1,7 @@
 package com.neofast.tech_revised.screen;
 
 import com.neofast.tech_revised.block.ModBlocks;
-import com.neofast.tech_revised.block.entity.custom.WorkbenchTransistors_BasicBlockEntity;
-import com.neofast.tech_revised.screen.slot.ModResultSlot;
+import com.neofast.tech_revised.block.entity.custom.HDD_27KB_BlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -15,42 +14,53 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
-public class WorkbenchTransistors_BasicMenu extends AbstractContainerMenu {
-    private final WorkbenchTransistors_BasicBlockEntity blockEntity;
+public class HDD_27KB_Menu extends AbstractContainerMenu {
+    private final HDD_27KB_BlockEntity blockEntity;
     private final Level level;
-    public WorkbenchTransistors_BasicMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
+    public HDD_27KB_Menu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
         this(pContainerId, inv, inv.player.level.getBlockEntity(extraData.readBlockPos()));
     }
 
-    public WorkbenchTransistors_BasicMenu(int pContainerId, Inventory inv, BlockEntity entity) {
-        super(ModMenuTypes.WORKBENCH_TRANSISTORS_BASIC_MENU.get(), pContainerId);
-        checkContainerSize(inv, 8);
-        blockEntity = ((WorkbenchTransistors_BasicBlockEntity) entity);
-        this.level = inv.player.level;
+    public HDD_27KB_Menu(int pContainerId, Inventory inv, BlockEntity entity) {
+        super(ModMenuTypes.HDD_27KB_MENU.get(), pContainerId);
+        checkContainerSize(inv, 27);
+        blockEntity = ((HDD_27KB_BlockEntity) entity);
+        this.level = inv.player.level;//..
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
         this.blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(handler -> {
-            this.addSlot(new SlotItemHandler(handler, 0, 46, 16));
-            this.addSlot(new SlotItemHandler(handler, 1, 46, 38));
-            this.addSlot(new SlotItemHandler(handler, 2, 46, 60));
-            this.addSlot(new SlotItemHandler(handler, 3, 68, 16));
-            this.addSlot(new SlotItemHandler(handler, 4, 68, 38));
-            this.addSlot(new SlotItemHandler(handler, 5, 68, 60));
-            this.addSlot(new SlotItemHandler(handler, 6, 90, 38));
-            this.addSlot(new ModResultSlot(handler, 7, 90, 38));
+            this.addSlot(new SlotItemHandler(handler, 0, 8, 8));
+            this.addSlot(new SlotItemHandler(handler, 1, 26, 8));
+            this.addSlot(new SlotItemHandler(handler, 2, 44, 8));
+            this.addSlot(new SlotItemHandler(handler, 3, 62, 8));
+            this.addSlot(new SlotItemHandler(handler, 4, 80, 8));
+            this.addSlot(new SlotItemHandler(handler, 5, 98, 8));
+            this.addSlot(new SlotItemHandler(handler, 6, 116, 8));
+            this.addSlot(new SlotItemHandler(handler, 7, 134, 8));
+            this.addSlot(new SlotItemHandler(handler, 8, 152, 8));
+            this.addSlot(new SlotItemHandler(handler, 9, 8, 26));
+            this.addSlot(new SlotItemHandler(handler, 10, 26, 26));
+            this.addSlot(new SlotItemHandler(handler, 11, 44, 26));
+            this.addSlot(new SlotItemHandler(handler, 12, 62, 26));
+            this.addSlot(new SlotItemHandler(handler, 13, 80, 26));
+            this.addSlot(new SlotItemHandler(handler, 14, 98, 26));
+            this.addSlot(new SlotItemHandler(handler, 15, 116, 26));
+            this.addSlot(new SlotItemHandler(handler, 16, 134, 26));
+            this.addSlot(new SlotItemHandler(handler, 17, 152, 26));
+            this.addSlot(new SlotItemHandler(handler, 18, 8, 44));
+            this.addSlot(new SlotItemHandler(handler, 19, 26, 44));
+            this.addSlot(new SlotItemHandler(handler, 20, 44, 44));
+            this.addSlot(new SlotItemHandler(handler, 21, 62, 44));
+            this.addSlot(new SlotItemHandler(handler, 22, 80, 44));
+            this.addSlot(new SlotItemHandler(handler, 23, 98, 44));
+            this.addSlot(new SlotItemHandler(handler, 24, 116, 44));
+            this.addSlot(new SlotItemHandler(handler, 25, 134, 44));
+            this.addSlot(new SlotItemHandler(handler, 26, 152, 44));
         });
     }
 
-
-    // CREDIT GOES TO: diesieben07 | https://github.com/diesieben07/SevenCommons
-    // must assign a slot number to each of the slots used by the GUI.
-    // For this container, we can see both the tile inventory's slots as well as the player inventory slots and the hotbar.
-    // Each time we add a Slot to the container, it automatically increases the slotIndex, which means
-    //  0 - 8 = hotbar slots (which will map to the InventoryPlayer slot numbers 0 - 8)
-    //  9 - 35 = player inventory slots (which map to the InventoryPlayer slot numbers 9 - 35)
-    //  36 - 44 = TileInventory slots, which map to our TileEntity slot numbers 0 - 8)
     private static final int HOTBAR_SLOT_COUNT = 9;
     private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
@@ -60,12 +70,11 @@ public class WorkbenchTransistors_BasicMenu extends AbstractContainerMenu {
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
     // THIS YOU HAVE TO DEFINE!
-    private static final int TE_INVENTORY_SLOT_COUNT = 8;  // must be the number of slots you have!
+    private static final int TE_INVENTORY_SLOT_COUNT = 27;  // must be the number of slots you have!
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {
         Slot sourceSlot = slots.get(index);
-        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;  //EMPTY_ITEM
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copyOfSourceStack = sourceStack.copy();
 
@@ -98,7 +107,7 @@ public class WorkbenchTransistors_BasicMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player pPlayer) {
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
-                pPlayer, ModBlocks.WORKBENCH_TRANSISTORS_BASIC.get());
+                pPlayer, ModBlocks.HDD_27KB_BLOCK.get());
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

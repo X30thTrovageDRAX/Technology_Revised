@@ -1,6 +1,7 @@
  package com.neofast.tech_revised.block;
 
  import com.neofast.tech_revised.TechRevised;
+ import com.neofast.tech_revised.block.custom.HDD_27KB;
  import com.neofast.tech_revised.block.custom.WorkbenchTransistors;
  import com.neofast.tech_revised.block.custom.WorkbenchTransistors_Basic;
  import com.neofast.tech_revised.item.ModItems;
@@ -33,9 +34,16 @@
              () -> new SlabBlock(BlockBehaviour.Properties.of(Material.METAL)
                      .strength(9f).requiresCorrectToolForDrops()), CreativeModeTab.TAB_MISC);
 
-
      public static final RegistryObject<Block> WORKBENCH_TRANSISTORS = registerBlock("workbench_transistors",
              () -> new WorkbenchTransistors(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()),
+             CreativeModeTab.TAB_MISC);
+
+     public static final RegistryObject<Block> MACHINE_FRAME_0 = registerBlock("machine_frame_0",
+             () -> new SlabBlock(BlockBehaviour.Properties.of(Material.METAL)
+                     .strength(9f).requiresCorrectToolForDrops()), CreativeModeTab.TAB_MISC);
+
+     public static final RegistryObject<Block> HDD_27KB_BLOCK = registerBlock("hdd_27kb",
+             () -> new HDD_27KB(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()),
              CreativeModeTab.TAB_MISC);
 
      public static final RegistryObject<Block> WORKBENCH_TRANSISTORS_BASIC = registerBlock("workbench_transistors_basic",

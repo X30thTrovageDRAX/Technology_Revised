@@ -3,6 +3,7 @@ package com.neofast.tech_revised;
 import com.neofast.tech_revised.block.ModBlocks;
 import com.neofast.tech_revised.block.entity.ModBlockEntities;
 import com.neofast.tech_revised.item.ModItems;
+import com.neofast.tech_revised.screen.HDD_27KB_Screen;
 import com.neofast.tech_revised.screen.ModMenuTypes;
 import com.neofast.tech_revised.screen.WorkbenchTransistorsScreen;
 import com.neofast.tech_revised.screen.WorkbenchTransistors_BasicScreen;
@@ -45,6 +46,10 @@ public class TechRevised
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.WORKBENCH_TRANSISTORS.get(), RenderType.translucent());
 
         MenuScreens.register(ModMenuTypes.WORKBENCH_TRANSISTORS_MENU.get(), WorkbenchTransistorsScreen::new);
+
+        ItemBlockRenderTypes.setRenderLayer(ModBlocks.HDD_27KB_BLOCK.get(), RenderType.translucent());
+
+        MenuScreens.register(ModMenuTypes.HDD_27KB_MENU.get(), HDD_27KB_Screen::new);
 
         //Transistors Workbench (Basic)
 

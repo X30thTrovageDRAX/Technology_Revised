@@ -20,7 +20,8 @@ public class ModMenuTypes {
     public static final RegistryObject<MenuType<WorkbenchTransistors_BasicMenu>> WORKBENCH_TRANSISTORS_BASIC_MENU =
             registerMenuType(WorkbenchTransistors_BasicMenu::new, "workbench_transistors_basic_menu");
 
-
+    public static final RegistryObject<MenuType<HDD_27KB_Menu>> HDD_27KB_MENU =
+            registerMenuType(HDD_27KB_Menu::new, "hdd_27kb_menu");
 
     private static <T extends AbstractContainerMenu>RegistryObject<MenuType<T>> registerMenuType(IContainerFactory<T> factory,
                                                                                                  String name) {

@@ -3,7 +3,7 @@ package com.neofast.tech_revised.block.entity;
 
 import com.neofast.tech_revised.TechRevised;
 import com.neofast.tech_revised.block.ModBlocks;
-import com.neofast.tech_revised.block.custom.WorkbenchTransistors_Basic;
+import com.neofast.tech_revised.block.entity.custom.HDD_27KB_BlockEntity;
 import com.neofast.tech_revised.block.entity.custom.WorkbenchTransistorsBlockEntity;
 import com.neofast.tech_revised.block.entity.custom.WorkbenchTransistors_BasicBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,6 +20,10 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("workbench_transistors_entity", () ->
                     BlockEntityType.Builder.of(WorkbenchTransistorsBlockEntity::new,
                             ModBlocks.WORKBENCH_TRANSISTORS.get()).build(null));
+    public static final RegistryObject<BlockEntityType<HDD_27KB_BlockEntity>> HDD_27KB_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("hdd_27kb", () ->
+                    BlockEntityType.Builder.of(HDD_27KB_BlockEntity::new,
+                            ModBlocks.HDD_27KB_BLOCK.get()).build(null));
     public static final RegistryObject<BlockEntityType<WorkbenchTransistors_BasicBlockEntity>> WORKBENCH_TRANSISTORS_BASIC =
             BLOCK_ENTITIES.register("workbench_transistors_basic_entity", () ->
                     BlockEntityType.Builder.of(WorkbenchTransistors_BasicBlockEntity::new,

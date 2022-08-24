@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "items",
+  "pattern": [
+    "IPI",
+    "TET",
+    "ICI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "item": "tech_revised:transistor_2"
+    },
+    "E": {
+      "item": "tech_revised:copper_coil"
+    },
+    "P": {
+      "item": "tech_revised:pcb"
+    },
+    "C": {
+      "item": "tech_revised:compressed_silicon"
+    }
+  },
+  "result": {
+    "item": "tech_revised:machine_frame_0"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:blasting",
+  "ingredient": [
+    {
+      "item": "minecraft:copper_ingot"
+    }
+  ],
+  "result": "tech_revised:copper_coil",
+  "experience": 3.0,
+  "cookingtime": 300
+}

@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "items",
+  "pattern": [
+    "GGG",
+    "TPT",
+    "GDG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:green_dye"
+    },
+    "T": {
+      "item": "tech_revised:transistor_2"
+    },
+    "P": {
+      "item": "tech_revised:pcb"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "D": {
+      "item": "tech_revised:dielectric_substance"
+    }
+  },
+  "result": {
+    "item": "tech_revised:ram_module_1gb"
+  }
+}

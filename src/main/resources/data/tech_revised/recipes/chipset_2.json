@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "items",
+  "pattern": [
+    "GTG",
+    "SPS",
+    "CCC"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:green_dye"
+    },
+    "T": {
+      "item": "tech_revised:transistor_2"
+    },
+    "P": {
+      "item": "tech_revised:pcb"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "S": {
+      "item": "tech_revised:silicon"
+    }
+  },
+  "result": {
+    "item": "tech_revised:chipset_2"
+  }
+}

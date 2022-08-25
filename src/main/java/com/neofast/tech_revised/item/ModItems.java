@@ -1,9 +1,9 @@
 package com.neofast.tech_revised.item;
 
 import com.neofast.tech_revised.TechRevised;
-import net.minecraft.world.item.BottleItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -22,6 +22,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> COPPER_COIL = ITEMS.register("copper_coil",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+
+    public static final RegistryObject<Item> RAM_MODULE_1GB = ITEMS.register("ram_module_1gb",
+            () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
     public static final RegistryObject<Item> TRANSISTOR_2 = ITEMS.register("transistor_2",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
@@ -36,8 +39,6 @@ public class ModItems {
 
     public static final RegistryObject<Item> TRANSISTOR_0 = ITEMS.register("transistor_0",
             () -> new Item(new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
-
-
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

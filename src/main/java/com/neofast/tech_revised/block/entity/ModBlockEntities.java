@@ -24,6 +24,7 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("hdd_27kb", () ->
                     BlockEntityType.Builder.of(HDD_27KB_BlockEntity::new,
                             ModBlocks.HDD_27KB_BLOCK.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<WorkbenchTransistors_BasicBlockEntity>> WORKBENCH_TRANSISTORS_BASIC =
             BLOCK_ENTITIES.register("workbench_transistors_basic_entity", () ->
                     BlockEntityType.Builder.of(WorkbenchTransistors_BasicBlockEntity::new,

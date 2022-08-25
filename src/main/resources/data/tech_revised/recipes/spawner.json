@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "EME",
+    "IBI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "tech_revised:machine_frame_0"
+    },
+    "E": {
+      "item": "minecraft:egg"
+    },
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "P": {
+      "item": "tech_revised:ram_module_1gb"
+    }
+  },
+  "result": {
+    "item": "minecraft:spawner",
+    "count": 1
+  }
+}

@@ -3,14 +3,17 @@
   "group": "items",
   "pattern": [
     "#@",
-    "K"
+    "KF"
   ],
   "key": {
     "#": {
-      "item": "minecraft:potion"
+      "item": "minecraft:ice"
     },
     "K": {
       "item": "minecraft:glass"
+    },
+    "F": {
+      "item": "minecraft:fire_charge"
     },
     "@": {
       "item": "minecraft:raw_copper"
@@ -18,6 +21,6 @@
   },
   "result": {
     "item": "tech_revised:dielectric_substance",
-    "count": 8
+    "count": 2
   }
 }

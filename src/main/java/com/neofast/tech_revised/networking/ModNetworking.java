@@ -3,6 +3,7 @@ package com.neofast.tech_revised.networking;
 import com.neofast.tech_revised.TechRevised;
 import com.neofast.tech_revised.networking.packet.RequestVmScreenshotPacket;
 import com.neofast.tech_revised.networking.packet.SaveVmConfigPacket;
+import com.neofast.tech_revised.networking.packet.VmKeyboardInputPacket;
 import com.neofast.tech_revised.networking.packet.VmScreenshotPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
@@ -44,6 +45,13 @@ public final class ModNetworking {
                 VmScreenshotPacket::encode,
                 VmScreenshotPacket::decode,
                 VmScreenshotPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                VmKeyboardInputPacket.class,
+                VmKeyboardInputPacket::encode,
+                VmKeyboardInputPacket::decode,
+                VmKeyboardInputPacket::handle
         );
     }
 }

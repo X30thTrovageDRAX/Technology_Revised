@@ -21,11 +21,50 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
 
 public final class VmCommandIntegration {
     public enum VmAction {
         START,
         STOP
+    }
+
+    public enum VmSpecialKey {
+        ENTER(List.of("1c", "9c")),
+        BACKSPACE(List.of("0e", "8e")),
+        TAB(List.of("0f", "8f")),
+        ESCAPE(List.of("01", "81")),
+        LEFT(List.of("e0", "4b", "e0", "cb")),
+        RIGHT(List.of("e0", "4d", "e0", "cd")),
+        UP(List.of("e0", "48", "e0", "c8")),
+        DOWN(List.of("e0", "50", "e0", "d0")),
+        DELETE(List.of("e0", "53", "e0", "d3")),
+        HOME(List.of("e0", "47", "e0", "c7")),
+        END(List.of("e0", "4f", "e0", "cf")),
+        PAGE_UP(List.of("e0", "49", "e0", "c9")),
+        PAGE_DOWN(List.of("e0", "51", "e0", "d1")),
+        F1(List.of("3b", "bb")),
+        F2(List.of("3c", "bc")),
+        F3(List.of("3d", "bd")),
+        F4(List.of("3e", "be")),
+        F5(List.of("3f", "bf")),
+        F6(List.of("40", "c0")),
+        F7(List.of("41", "c1")),
+        F8(List.of("42", "c2")),
+        F9(List.of("43", "c3")),
+        F10(List.of("44", "c4")),
+        F11(List.of("57", "d7")),
+        F12(List.of("58", "d8"));
+
+        private final List<String> scanCodes;
+
+        VmSpecialKey(List<String> scanCodes) {
+            this.scanCodes = scanCodes;
+        }
+
+        public List<String> getScanCodes() {
+            return scanCodes;
+        }
     }
 
     private static final Logger LOGGER = LogManager.getLogger();
@@ -39,7 +78,9 @@ public final class VmCommandIntegration {
     private static final String START_COMMAND_PROPERTY = "tech_revised.vm.startCommand";
     private static final String STOP_COMMAND_PROPERTY = "tech_revised.vm.stopCommand";
     private static final String VBOX_MANAGE_PATH_PROPERTY = "tech_revised.vm.vboxManagePath";
+    private static final String VM_MOUSE_MODE_PROPERTY = "tech_revised.vm.mouseMode";
     private static final String DEFAULT_VM_NAME = "Windows 7";
+    private static final String DEFAULT_VM_MOUSE_MODE = "usbtablet";
     private static final String VBOXMANAGE_PLACEHOLDER = "{vboxmanage}";
     private static final String DEFAULT_START_TEMPLATE = "\"" + VBOXMANAGE_PLACEHOLDER + "\" startvm \"{vmName}\" --type headless";
     private static final String DEFAULT_STOP_TEMPLATE = "\"" + VBOXMANAGE_PLACEHOLDER + "\" controlvm \"{vmName}\" acpipowerbutton";
@@ -64,6 +105,14 @@ public final class VmCommandIntegration {
         return command.isEmpty() ? DEFAULT_STOP_TEMPLATE : command;
     }
 
+    public static String getConfiguredMouseMode() {
+        String mode = System.getProperty(VM_MOUSE_MODE_PROPERTY, DEFAULT_VM_MOUSE_MODE).trim().toLowerCase(Locale.ROOT);
+        return switch (mode) {
+            case "ps2", "usb", "usbtablet", "usbmultitouch", "usbmtscreenpluspad" -> mode;
+            default -> DEFAULT_VM_MOUSE_MODE;
+        };
+    }
+
     public static String resolveVmName(String localVmName) {
         String trimmed = localVmName == null ? "" : localVmName.trim();
         if (!trimmed.isEmpty()) {
@@ -81,13 +130,56 @@ public final class VmCommandIntegration {
         );
     }
 
-    public static void captureScreenshotAsync(String localVmName, String localStartTemplate, String localStopTemplate,
-                                              Consumer<VmScreenshotResult> callback) {
+    public static void sendKeyboardTextAsync(String localVmName, String localStartTemplate, String localStopTemplate,
+                                             String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
         String vmName = resolveVmName(localVmName);
+        String vboxExecutable = resolveVBoxManageExecutable(localStartTemplate, localStopTemplate);
 
         EXECUTOR.submit(() -> {
             try {
-                VmScreenshotResult result = captureScreenshot(vmName);
+                runVBoxManage(vboxExecutable, List.of("controlvm", vmName, "keyboardputstring", text), 8);
+            } catch (Exception exception) {
+                LOGGER.debug("Failed to send keyboard text to VM '{}': {}", vmName, exception.getMessage());
+            }
+        });
+    }
+
+    public static void sendKeyboardSpecialKeyAsync(String localVmName, String localStartTemplate, String localStopTemplate,
+                                                   VmSpecialKey specialKey) {
+        if (specialKey == null) {
+            return;
+        }
+
+        String vmName = resolveVmName(localVmName);
+        String vboxExecutable = resolveVBoxManageExecutable(localStartTemplate, localStopTemplate);
+
+        EXECUTOR.submit(() -> {
+            try {
+                List<String> command = new ArrayList<>();
+                command.add("controlvm");
+                command.add(vmName);
+                command.add("keyboardputscancode");
+                command.addAll(specialKey.getScanCodes());
+                runVBoxManage(vboxExecutable, command, 8);
+            } catch (Exception exception) {
+                LOGGER.debug("Failed to send keyboard special key '{}' to VM '{}': {}",
+                        specialKey.name(), vmName, exception.getMessage());
+            }
+        });
+    }
+
+    public static void captureScreenshotAsync(String localVmName, String localStartTemplate, String localStopTemplate,
+                                              Consumer<VmScreenshotResult> callback) {
+        String vmName = resolveVmName(localVmName);
+        String vboxExecutable = resolveVBoxManageExecutable(localStartTemplate, localStopTemplate);
+
+        EXECUTOR.submit(() -> {
+            try {
+                VmScreenshotResult result = captureScreenshot(vmName, vboxExecutable);
                 callback.accept(result);
             } catch (Exception exception) {
                 LOGGER.error("VM screenshot capture failed.", exception);
@@ -103,12 +195,13 @@ public final class VmCommandIntegration {
     public static void executeAction(ServerLevel level, BlockPos pos, ServerPlayer player, VmAction action,
                                      String localVmName, String localStartTemplate, String localStopTemplate) {
         String vmName = resolveVmName(localVmName);
-        String command = resolveCommand(action, vmName, localStartTemplate, localStopTemplate);
+        String vboxExecutable = resolveVBoxManageExecutable(localStartTemplate, localStopTemplate);
+        String command = resolveCommand(action, vmName, localStartTemplate, localStopTemplate, vboxExecutable);
 
         EXECUTOR.submit(() -> {
             try {
                 ActionExecution actionExecution = action == VmAction.START
-                        ? executeStartWithLockHandling(vmName, command)
+                        ? executeStartWithLockHandling(vmName, command, vboxExecutable)
                         : executeStop(command);
 
                 final boolean finalSuccess = actionExecution.success();
@@ -163,22 +256,26 @@ public final class VmCommandIntegration {
         });
     }
 
-    private static String resolveCommand(VmAction action, String vmName, String localStartTemplate, String localStopTemplate) {
+    private static String resolveCommand(VmAction action, String vmName,
+                                         String localStartTemplate, String localStopTemplate,
+                                         String vboxExecutable) {
         String localTemplate = action == VmAction.START ? localStartTemplate : localStopTemplate;
         String template = resolveCommandTemplate(action, localTemplate);
-        String vboxExecutable = resolveVBoxManageExecutable();
         String normalized = normalizeLegacyVBoxManageCommand(template, vboxExecutable);
         String quotedVBox = "\"" + vboxExecutable + "\"";
         String quotedVmName = "\"" + vmName + "\"";
 
         String withVBox = normalized
                 .replace("\"" + VBOXMANAGE_PLACEHOLDER + "\"", quotedVBox)
+                .replace("'" + VBOXMANAGE_PLACEHOLDER + "'", quotedVBox)
                 .replace(VBOXMANAGE_PLACEHOLDER, quotedVBox);
         String withVmName = withVBox
                 .replace("\"{vmName}\"", quotedVmName)
+                .replace("'{vmName}'", quotedVmName)
                 .replace("{vmName}", quotedVmName);
 
-        return quoteKnownVBoxPathIfNeeded(withVmName, vboxExecutable);
+        String fixedKnownPath = quoteKnownVBoxPathIfNeeded(withVmName, vboxExecutable);
+        return normalizeSingleQuotedSegments(fixedKnownPath);
     }
 
     private static String resolveCommandTemplate(VmAction action, String localTemplate) {
@@ -189,20 +286,20 @@ public final class VmCommandIntegration {
         return action == VmAction.START ? getConfiguredStartTemplate() : getConfiguredStopTemplate();
     }
 
-    private static VmScreenshotResult captureScreenshot(String vmName) throws Exception {
-        String vmState = queryVmState(vmName);
+    private static VmScreenshotResult captureScreenshot(String vmName, String vboxExecutable) throws Exception {
+        String vmState = queryVmState(vmName, vboxExecutable);
         if (!isActiveVmState(vmState)) {
             return new VmScreenshotResult(false,
                     "VM is not running (state: " + (vmState.isEmpty() ? "unknown" : vmState) + ").",
                     new byte[0]);
         }
 
-        String vboxExecutable = resolveVBoxManageExecutable();
         Path screenshotPath = Files.createTempFile("tech_revised_vm_", ".png");
 
         try {
-            String command = "\"" + vboxExecutable + "\" controlvm \"" + vmName + "\" screenshotpng \"" + screenshotPath.toAbsolutePath() + "\"";
-            CommandResult result = runCommand(command, 12);
+            CommandResult result = runVBoxManage(vboxExecutable,
+                    List.of("controlvm", vmName, "screenshotpng", screenshotPath.toAbsolutePath().toString()),
+                    12);
             if (result.exitCode() != 0) {
                 return new VmScreenshotResult(false, result.outputPreview(), new byte[0]);
             }
@@ -233,11 +330,14 @@ public final class VmCommandIntegration {
         return new ActionExecution(result.exitCode() == 0, false, result);
     }
 
-    private static ActionExecution executeStartWithLockHandling(String vmName, String startCommand) throws Exception {
-        String initialState = queryVmState(vmName);
+    private static ActionExecution executeStartWithLockHandling(String vmName, String startCommand,
+                                                                String vboxExecutable) throws Exception {
+        String initialState = queryVmState(vmName, vboxExecutable);
         if (isActiveVmState(initialState)) {
             return new ActionExecution(true, true, new CommandResult(0, "VMState=" + initialState));
         }
+
+        applyMouseModeIfPossible(vmName, vboxExecutable);
 
         CommandResult attempt = runCommand(startCommand, 8);
         if (attempt.exitCode() == 0) {
@@ -252,7 +352,7 @@ public final class VmCommandIntegration {
         for (int i = 0; i < 5; i++) {
             Thread.sleep(1500L);
 
-            String state = queryVmState(vmName);
+            String state = queryVmState(vmName, vboxExecutable);
             if (isActiveVmState(state)) {
                 return new ActionExecution(true, true, new CommandResult(0, "VMState=" + state));
             }
@@ -268,7 +368,7 @@ public final class VmCommandIntegration {
             }
         }
 
-        String finalState = queryVmState(vmName);
+        String finalState = queryVmState(vmName, vboxExecutable);
         if (isActiveVmState(finalState)) {
             return new ActionExecution(true, true, new CommandResult(0, "VMState=" + finalState));
         }
@@ -276,11 +376,45 @@ public final class VmCommandIntegration {
         return new ActionExecution(false, false, attempt);
     }
 
+    private static void applyMouseModeIfPossible(String vmName, String vboxExecutable) {
+        try {
+            String mouseMode = getConfiguredMouseMode();
+            CommandResult result = runVBoxManage(
+                    vboxExecutable,
+                    List.of("modifyvm", vmName, "--mouse", mouseMode),
+                    8
+            );
+            if (result.exitCode() != 0) {
+                LOGGER.debug("Failed to set VM mouse mode '{}' for '{}': {}",
+                        mouseMode, vmName, result.outputPreview());
+            }
+        } catch (Exception exception) {
+            LOGGER.debug("Failed to apply VM mouse mode for '{}': {}", vmName, exception.getMessage());
+        }
+    }
+
     private static CommandResult runCommand(String command, int maxOutputLines) throws Exception {
-        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", command);
+        String normalizedCommand = normalizeSingleQuotedSegments(command);
+        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", normalizedCommand);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
+        return collectProcessOutput(process, maxOutputLines);
+    }
+
+    private static CommandResult runVBoxManage(String vboxExecutable, List<String> arguments, int maxOutputLines) throws Exception {
+        List<String> command = new ArrayList<>();
+        command.add(sanitizeExecutablePath(vboxExecutable));
+        command.addAll(arguments);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+
+        return collectProcessOutput(process, maxOutputLines);
+    }
+
+    private static CommandResult collectProcessOutput(Process process, int maxOutputLines) throws Exception {
         List<String> outputLines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
@@ -302,13 +436,11 @@ public final class VmCommandIntegration {
             return template;
         }
 
-        String normalized = template.replace("VBoxManage.exe", "VBoxManage");
-        if (normalized.contains("VBoxManage")) {
-            return template.replace("VBoxManage.exe", "\"" + vboxExecutable + "\"")
-                    .replace("VBoxManage", "\"" + vboxExecutable + "\"");
-        }
-
-        return template;
+        String quotedVBox = "\"" + vboxExecutable + "\"";
+        return template.replaceFirst(
+                "(?i)^\\s*(?:\"|')?VBoxManage(?:\\.exe)?(?:\"|')?",
+                Matcher.quoteReplacement(quotedVBox)
+        );
     }
 
     private static String quoteKnownVBoxPathIfNeeded(String command, String vboxExecutable) {
@@ -322,17 +454,34 @@ public final class VmCommandIntegration {
         return command;
     }
 
-    private static String resolveVBoxManageExecutable() {
-        String configured = System.getProperty(VBOX_MANAGE_PATH_PROPERTY, "").trim();
+    private static String normalizeSingleQuotedSegments(String command) {
+        if (command.indexOf('\'') < 0) {
+            return command;
+        }
+        // cmd.exe does not treat single quotes as argument quoting; convert single-quoted segments.
+        return command.replaceAll("'([^']*)'", "\"$1\"");
+    }
+
+    private static String resolveVBoxManageExecutable(String... commandTemplates) {
+        if (commandTemplates != null) {
+            for (String template : commandTemplates) {
+                String fromTemplate = extractVBoxExecutableFromTemplate(template);
+                if (!fromTemplate.isEmpty()) {
+                    return fromTemplate;
+                }
+            }
+        }
+
+        String configured = sanitizeExecutablePath(System.getProperty(VBOX_MANAGE_PATH_PROPERTY, ""));
         if (!configured.isEmpty()) {
             return configured;
         }
 
         if (Files.isRegularFile(Path.of(VBOX_PATH_PROGRAM_FILES))) {
-            return VBOX_PATH_PROGRAM_FILES;
+            return sanitizeExecutablePath(VBOX_PATH_PROGRAM_FILES);
         }
         if (Files.isRegularFile(Path.of(VBOX_PATH_PROGRAM_FILES_X86))) {
-            return VBOX_PATH_PROGRAM_FILES_X86;
+            return sanitizeExecutablePath(VBOX_PATH_PROGRAM_FILES_X86);
         }
 
         return "VBoxManage";
@@ -361,10 +510,11 @@ public final class VmCommandIntegration {
                 || lowerOutputPreview.contains("vbox_e_invalid_object_state");
     }
 
-    private static String queryVmState(String vmName) {
+    private static String queryVmState(String vmName, String vboxExecutable) {
         try {
-            String command = "\"" + resolveVBoxManageExecutable() + "\" showvminfo \"" + vmName + "\" --machinereadable";
-            CommandResult result = runCommand(command, 300);
+            CommandResult result = runVBoxManage(vboxExecutable,
+                    List.of("showvminfo", vmName, "--machinereadable"),
+                    300);
             if (result.exitCode() != 0) {
                 return "";
             }
@@ -388,6 +538,69 @@ public final class VmCommandIntegration {
                 || "paused".equals(vmState)
                 || "stuck".equals(vmState)
                 || "teleporting".equals(vmState);
+    }
+
+    private static String extractVBoxExecutableFromTemplate(String template) {
+        String trimmed = template == null ? "" : template.trim();
+        if (trimmed.isEmpty() || trimmed.contains(VBOXMANAGE_PLACEHOLDER)) {
+            return "";
+        }
+
+        String normalizedQuotes = normalizeSingleQuotedSegments(trimmed);
+        if (normalizedQuotes.startsWith("\"")) {
+            int endQuote = normalizedQuotes.indexOf('"', 1);
+            if (endQuote > 1) {
+                String firstQuoted = normalizedQuotes.substring(1, endQuote).trim();
+                if (looksLikeVBoxExecutable(firstQuoted)) {
+                    return sanitizeExecutablePath(firstQuoted);
+                }
+            }
+        }
+
+        String lower = normalizedQuotes.toLowerCase(Locale.ROOT);
+        int idx = lower.indexOf("vboxmanage");
+        if (idx >= 0) {
+            int end = idx + "vboxmanage".length();
+            if (lower.startsWith(".exe", end)) {
+                end += 4;
+            }
+            String candidate = normalizedQuotes.substring(0, end).trim();
+            if (looksLikeVBoxExecutable(candidate)) {
+                return sanitizeExecutablePath(candidate);
+            }
+        }
+
+        int firstSpace = normalizedQuotes.indexOf(' ');
+        String firstToken = firstSpace >= 0 ? normalizedQuotes.substring(0, firstSpace).trim() : normalizedQuotes;
+        if (looksLikeVBoxExecutable(firstToken)) {
+            return sanitizeExecutablePath(firstToken);
+        }
+
+        return "";
+    }
+
+    private static boolean looksLikeVBoxExecutable(String value) {
+        String lower = sanitizeExecutablePath(value).toLowerCase(Locale.ROOT);
+        return lower.endsWith("vboxmanage") || lower.endsWith("vboxmanage.exe");
+    }
+
+    private static String sanitizeExecutablePath(String value) {
+        String sanitized = value == null ? "" : value.trim();
+        if (sanitized.isEmpty()) {
+            return "";
+        }
+
+        while (sanitized.startsWith("\"") || sanitized.startsWith("'")) {
+            sanitized = sanitized.substring(1).trim();
+        }
+        while (sanitized.endsWith("\"") || sanitized.endsWith("'")) {
+            sanitized = sanitized.substring(0, sanitized.length() - 1).trim();
+        }
+
+        if ("VBoxManage.exe".equalsIgnoreCase(sanitized)) {
+            return "VBoxManage";
+        }
+        return sanitized;
     }
 
     private static void setBlockActiveState(ServerLevel level, BlockPos pos, boolean active) {

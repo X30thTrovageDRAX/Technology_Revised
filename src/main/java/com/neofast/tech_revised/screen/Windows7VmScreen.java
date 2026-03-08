@@ -3,9 +3,11 @@ package com.neofast.tech_revised.screen;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.neofast.tech_revised.TechRevised;
 import com.neofast.tech_revised.client.VmScreenClientState;
+import com.neofast.tech_revised.integration.vm.VmCommandIntegration;
 import com.neofast.tech_revised.networking.ModNetworking;
 import com.neofast.tech_revised.networking.packet.RequestVmScreenshotPacket;
 import com.neofast.tech_revised.networking.packet.SaveVmConfigPacket;
+import com.neofast.tech_revised.networking.packet.VmKeyboardInputPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -15,6 +17,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.ByteArrayInputStream;
 import java.util.UUID;
@@ -30,12 +33,25 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
     private EditBox vmNameBox;
     private EditBox startCommandBox;
     private EditBox stopCommandBox;
+    private Button saveButton;
+    private Button refreshButton;
+    private Button closeButton;
     private ResourceLocation previewTextureLocation;
     private int previewTextureWidth = 1;
     private int previewTextureHeight = 1;
     private long lastPreviewUpdateId = -1L;
     private String previewStatus = "";
     private int refreshTicks = 0;
+    private boolean vmFullscreen = false;
+    private boolean previewFocused = false;
+    private int previewAreaX = 0;
+    private int previewAreaY = 0;
+    private int previewAreaWidth = 0;
+    private int previewAreaHeight = 0;
+    private int previewDrawX = -1;
+    private int previewDrawY = -1;
+    private int previewDrawWidth = 0;
+    private int previewDrawHeight = 0;
 
     public Windows7VmScreen(Windows7VmMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -70,25 +86,32 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
         stopCommandBox.setValue(menu.getStopCommand());
         addRenderableWidget(stopCommandBox);
 
-        addRenderableWidget(Button.builder(
+        saveButton = Button.builder(
                         Component.translatable("screen.tech_revised.vm.button.save"),
                         button -> saveConfig())
                 .bounds(left, this.topPos + 156, 54, 20)
-                .build());
+                .build();
+        addRenderableWidget(saveButton);
 
-        addRenderableWidget(Button.builder(
+        refreshButton = Button.builder(
                         Component.translatable("screen.tech_revised.vm.button.refresh"),
                         button -> requestScreenshot())
                 .bounds(left + 58, this.topPos + 156, 54, 20)
-                .build());
+                .build();
+        addRenderableWidget(refreshButton);
 
-        addRenderableWidget(Button.builder(
+        closeButton = Button.builder(
                         Component.translatable("screen.tech_revised.vm.button.close"),
                         button -> onClose())
                 .bounds(left + fieldWidth - 54, this.topPos + 156, 54, 20)
-                .build());
+                .build();
+        addRenderableWidget(closeButton);
 
         previewStatus = Component.translatable("screen.tech_revised.vm.preview.waiting").getString();
+        vmFullscreen = false;
+        previewFocused = false;
+        setConfigWidgetsVisible(true);
+        updatePreviewArea();
         requestScreenshot();
         setInitialFocus(vmNameBox);
     }
@@ -96,46 +119,74 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
     @Override
     public void containerTick() {
         super.containerTick();
-        vmNameBox.tick();
-        startCommandBox.tick();
-        stopCommandBox.tick();
+        if (vmNameBox.visible) {
+            vmNameBox.tick();
+            startCommandBox.tick();
+            stopCommandBox.tick();
+        }
 
         pollScreenshotUpdate();
 
         if (--refreshTicks <= 0) {
             requestScreenshot();
-            refreshTicks = 40;
+            refreshTicks = vmFullscreen ? 8 : 40;
         }
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        int left = this.leftPos;
-        int top = this.topPos;
-        guiGraphics.fill(left, top, left + this.imageWidth, top + this.imageHeight, 0xFF1E1F23);
-        guiGraphics.fill(left + 1, top + 1, left + this.imageWidth - 1, top + this.imageHeight - 1, 0xFF2B2E36);
-        guiGraphics.fill(left + 10, top + 28, left + this.imageWidth - 10, top + 30, 0xFF5A6070);
+        updatePreviewArea();
 
-        int previewLeft = left + PREVIEW_X;
-        int previewTop = top + PREVIEW_Y;
-        guiGraphics.fill(previewLeft, previewTop, previewLeft + PREVIEW_WIDTH, previewTop + PREVIEW_HEIGHT, 0xFF111111);
-        guiGraphics.fill(previewLeft + 1, previewTop + 1, previewLeft + PREVIEW_WIDTH - 1, previewTop + PREVIEW_HEIGHT - 1, 0xFF000000);
+        if (vmFullscreen) {
+            guiGraphics.fill(0, 0, this.width, this.height, 0xFF050607);
+        } else {
+            int left = this.leftPos;
+            int top = this.topPos;
+            guiGraphics.fill(left, top, left + this.imageWidth, top + this.imageHeight, 0xFF1E1F23);
+            guiGraphics.fill(left + 1, top + 1, left + this.imageWidth - 1, top + this.imageHeight - 1, 0xFF2B2E36);
+            guiGraphics.fill(left + 10, top + 28, left + this.imageWidth - 10, top + 30, 0xFF5A6070);
+        }
 
+        int previewLeft = previewAreaX;
+        int previewTop = previewAreaY;
+        int previewWidth = previewAreaWidth;
+        int previewHeight = previewAreaHeight;
+        guiGraphics.fill(previewLeft, previewTop, previewLeft + previewWidth, previewTop + previewHeight, 0xFF111111);
+        guiGraphics.fill(previewLeft + 1, previewTop + 1, previewLeft + previewWidth - 1, previewTop + previewHeight - 1, 0xFF000000);
+        if (previewFocused) {
+            guiGraphics.fill(previewLeft, previewTop, previewLeft + previewWidth, previewTop + 1, 0xFF6AA9FF);
+            guiGraphics.fill(previewLeft, previewTop + previewHeight - 1, previewLeft + previewWidth, previewTop + previewHeight, 0xFF6AA9FF);
+            guiGraphics.fill(previewLeft, previewTop, previewLeft + 1, previewTop + previewHeight, 0xFF6AA9FF);
+            guiGraphics.fill(previewLeft + previewWidth - 1, previewTop, previewLeft + previewWidth, previewTop + previewHeight, 0xFF6AA9FF);
+        }
+
+        previewDrawX = previewLeft + 1;
+        previewDrawY = previewTop + 1;
+        previewDrawWidth = previewWidth - 2;
+        previewDrawHeight = previewHeight - 2;
         if (previewTextureLocation != null) {
-            int availableWidth = PREVIEW_WIDTH - 2;
-            int availableHeight = PREVIEW_HEIGHT - 2;
+            int availableWidth = previewWidth - 2;
+            int availableHeight = previewHeight - 2;
             float scale = Math.min(availableWidth / (float) previewTextureWidth, availableHeight / (float) previewTextureHeight);
             int drawWidth = Math.max(1, Math.round(previewTextureWidth * scale));
             int drawHeight = Math.max(1, Math.round(previewTextureHeight * scale));
             int drawX = previewLeft + 1 + (availableWidth - drawWidth) / 2;
             int drawY = previewTop + 1 + (availableHeight - drawHeight) / 2;
 
+            previewDrawX = drawX;
+            previewDrawY = drawY;
+            previewDrawWidth = drawWidth;
+            previewDrawHeight = drawHeight;
             guiGraphics.blit(previewTextureLocation, drawX, drawY, 0, 0, drawWidth, drawHeight, previewTextureWidth, previewTextureHeight);
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        if (vmFullscreen) {
+            return;
+        }
+
         guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xE0E0E0, false);
         guiGraphics.drawString(this.font,
                 Component.translatable("screen.tech_revised.vm.field.vm_name"),
@@ -152,20 +203,68 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
         guiGraphics.drawString(this.font,
                 this.font.plainSubstrByWidth(previewStatus, PREVIEW_WIDTH),
                 PREVIEW_X, 150, 0xAAB2C5, false);
+        guiGraphics.drawString(this.font,
+                Component.translatable(previewFocused
+                        ? "screen.tech_revised.vm.preview.focused"
+                        : "screen.tech_revised.vm.preview.click_to_focus"),
+                PREVIEW_X, 162, 0x8A93A8, false);
+        guiGraphics.drawString(this.font,
+                Component.translatable("screen.tech_revised.vm.preview.f11_hint"),
+                PREVIEW_X, 174, 0x8A93A8, false);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (vmNameBox.mouseClicked(mouseX, mouseY, button)
-                || startCommandBox.mouseClicked(mouseX, mouseY, button)
-                || stopCommandBox.mouseClicked(mouseX, mouseY, button)) {
+        if (!vmFullscreen) {
+            if (vmNameBox.mouseClicked(mouseX, mouseY, button)
+                    || startCommandBox.mouseClicked(mouseX, mouseY, button)
+                    || stopCommandBox.mouseClicked(mouseX, mouseY, button)) {
+                previewFocused = false;
+                return true;
+            }
+        }
+
+        if (isInPreview(mouseX, mouseY)) {
+            previewFocused = true;
+            vmNameBox.setFocused(false);
+            startCommandBox.setFocused(false);
+            stopCommandBox.setFocused(false);
+            setFocused(null);
+            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                previewStatus = Component.translatable("screen.tech_revised.vm.preview.mouse_not_supported").getString();
+            }
             return true;
         }
+
+        previewFocused = false;
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_F11) {
+            toggleVmFullscreen();
+            return true;
+        }
+
+        if (previewFocused) {
+            if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0 && keyCode == GLFW.GLFW_KEY_V) {
+                sendTextToVm(Minecraft.getInstance().keyboardHandler.getClipboard());
+                return true;
+            }
+
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                previewFocused = false;
+                return true;
+            }
+
+            VmCommandIntegration.VmSpecialKey specialKey = mapSpecialKey(keyCode);
+            if (specialKey != null) {
+                ModNetworking.CHANNEL.sendToServer(VmKeyboardInputPacket.forSpecialKey(menu.getBlockPos(), specialKey));
+            }
+            return true;
+        }
+
         if (vmNameBox.keyPressed(keyCode, scanCode, modifiers)
                 || startCommandBox.keyPressed(keyCode, scanCode, modifiers)
                 || stopCommandBox.keyPressed(keyCode, scanCode, modifiers)) {
@@ -176,6 +275,13 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
+        if (previewFocused) {
+            if (!Character.isISOControl(codePoint)) {
+                sendTextToVm(String.valueOf(codePoint));
+            }
+            return true;
+        }
+
         if (vmNameBox.charTyped(codePoint, modifiers)
                 || startCommandBox.charTyped(codePoint, modifiers)
                 || stopCommandBox.charTyped(codePoint, modifiers)) {
@@ -188,6 +294,19 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, delta);
+        if (vmFullscreen) {
+            guiGraphics.drawString(this.font,
+                    Component.translatable("screen.tech_revised.vm.preview.fullscreen_hint"),
+                    8, 8, 0xC6CBD8, false);
+            guiGraphics.drawString(this.font,
+                    this.font.plainSubstrByWidth(previewStatus, Math.max(1, this.width - 16)),
+                    8, this.height - 22, 0xAAB2C5, false);
+            guiGraphics.drawString(this.font,
+                    Component.translatable(previewFocused
+                            ? "screen.tech_revised.vm.preview.focused"
+                            : "screen.tech_revised.vm.preview.click_to_focus"),
+                    8, this.height - 12, 0x8A93A8, false);
+        }
         renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
@@ -255,5 +374,102 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
             Minecraft.getInstance().getTextureManager().release(previewTextureLocation);
             previewTextureLocation = null;
         }
+    }
+
+    private boolean isInPreview(double mouseX, double mouseY) {
+        return mouseX >= previewAreaX + 1
+                && mouseX < previewAreaX + previewAreaWidth - 1
+                && mouseY >= previewAreaY + 1
+                && mouseY < previewAreaY + previewAreaHeight - 1;
+    }
+
+    private void sendTextToVm(String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
+        int maxChunk = 200;
+        for (int i = 0; i < text.length(); i += maxChunk) {
+            String chunk = text.substring(i, Math.min(text.length(), i + maxChunk));
+            ModNetworking.CHANNEL.sendToServer(VmKeyboardInputPacket.forText(menu.getBlockPos(), chunk));
+        }
+    }
+
+    private void toggleVmFullscreen() {
+        vmFullscreen = !vmFullscreen;
+        setConfigWidgetsVisible(!vmFullscreen);
+        updatePreviewArea();
+        refreshTicks = 0;
+
+        if (vmFullscreen) {
+            previewFocused = true;
+            vmNameBox.setFocused(false);
+            startCommandBox.setFocused(false);
+            stopCommandBox.setFocused(false);
+            setFocused(null);
+        } else {
+            previewFocused = false;
+            setInitialFocus(vmNameBox);
+        }
+    }
+
+    private void setConfigWidgetsVisible(boolean visible) {
+        vmNameBox.visible = visible;
+        vmNameBox.setEditable(visible);
+        startCommandBox.visible = visible;
+        startCommandBox.setEditable(visible);
+        stopCommandBox.visible = visible;
+        stopCommandBox.setEditable(visible);
+
+        saveButton.visible = visible;
+        saveButton.active = visible;
+        refreshButton.visible = visible;
+        refreshButton.active = visible;
+        closeButton.visible = visible;
+        closeButton.active = visible;
+    }
+
+    private void updatePreviewArea() {
+        if (vmFullscreen) {
+            previewAreaX = 4;
+            previewAreaY = 22;
+            previewAreaWidth = Math.max(40, this.width - 8);
+            previewAreaHeight = Math.max(40, this.height - 48);
+        } else {
+            previewAreaX = this.leftPos + PREVIEW_X;
+            previewAreaY = this.topPos + PREVIEW_Y;
+            previewAreaWidth = PREVIEW_WIDTH;
+            previewAreaHeight = PREVIEW_HEIGHT;
+        }
+    }
+
+    private VmCommandIntegration.VmSpecialKey mapSpecialKey(int keyCode) {
+        return switch (keyCode) {
+            case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> VmCommandIntegration.VmSpecialKey.ENTER;
+            case GLFW.GLFW_KEY_BACKSPACE -> VmCommandIntegration.VmSpecialKey.BACKSPACE;
+            case GLFW.GLFW_KEY_TAB -> VmCommandIntegration.VmSpecialKey.TAB;
+            case GLFW.GLFW_KEY_ESCAPE -> VmCommandIntegration.VmSpecialKey.ESCAPE;
+            case GLFW.GLFW_KEY_LEFT -> VmCommandIntegration.VmSpecialKey.LEFT;
+            case GLFW.GLFW_KEY_RIGHT -> VmCommandIntegration.VmSpecialKey.RIGHT;
+            case GLFW.GLFW_KEY_UP -> VmCommandIntegration.VmSpecialKey.UP;
+            case GLFW.GLFW_KEY_DOWN -> VmCommandIntegration.VmSpecialKey.DOWN;
+            case GLFW.GLFW_KEY_DELETE -> VmCommandIntegration.VmSpecialKey.DELETE;
+            case GLFW.GLFW_KEY_HOME -> VmCommandIntegration.VmSpecialKey.HOME;
+            case GLFW.GLFW_KEY_END -> VmCommandIntegration.VmSpecialKey.END;
+            case GLFW.GLFW_KEY_PAGE_UP -> VmCommandIntegration.VmSpecialKey.PAGE_UP;
+            case GLFW.GLFW_KEY_PAGE_DOWN -> VmCommandIntegration.VmSpecialKey.PAGE_DOWN;
+            case GLFW.GLFW_KEY_F1 -> VmCommandIntegration.VmSpecialKey.F1;
+            case GLFW.GLFW_KEY_F2 -> VmCommandIntegration.VmSpecialKey.F2;
+            case GLFW.GLFW_KEY_F3 -> VmCommandIntegration.VmSpecialKey.F3;
+            case GLFW.GLFW_KEY_F4 -> VmCommandIntegration.VmSpecialKey.F4;
+            case GLFW.GLFW_KEY_F5 -> VmCommandIntegration.VmSpecialKey.F5;
+            case GLFW.GLFW_KEY_F6 -> VmCommandIntegration.VmSpecialKey.F6;
+            case GLFW.GLFW_KEY_F7 -> VmCommandIntegration.VmSpecialKey.F7;
+            case GLFW.GLFW_KEY_F8 -> VmCommandIntegration.VmSpecialKey.F8;
+            case GLFW.GLFW_KEY_F9 -> VmCommandIntegration.VmSpecialKey.F9;
+            case GLFW.GLFW_KEY_F10 -> VmCommandIntegration.VmSpecialKey.F10;
+            case GLFW.GLFW_KEY_F12 -> VmCommandIntegration.VmSpecialKey.F12;
+            default -> null;
+        };
     }
 }

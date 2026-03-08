@@ -17,6 +17,7 @@ import com.neofast.tech_revised.block.custom.ElectricArcFurnaceInputBusBlock;
 import com.neofast.tech_revised.block.custom.ElectricArcFurnaceOutputBusBlock;
 import com.neofast.tech_revised.block.custom.OxygenConverterControllerBlock;
 import com.neofast.tech_revised.block.custom.OxygenConverterFrameBlock;
+import com.neofast.tech_revised.block.custom.Windows7VmBlock;
 import com.neofast.tech_revised.fluid.ModFluids;
 import com.neofast.tech_revised.item.ModItems;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -69,6 +70,12 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> CRUSHER = registerBlock("crusher",
             () -> new CrusherBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).strength(6f).requiresCorrectToolForDrops()));
+
+    public static final RegistryObject<Block> WINDOWS_7_VM_BLOCK = registerBlock("windows_7_vm_block",
+            () -> new Windows7VmBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK)
+                    .strength(8f)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(Windows7VmBlock.ACTIVE) ? 12 : 0)));
 
     public static final RegistryObject<Block> ELECTRIC_ARC_FURNACE_CONTROLLER = registerBlock("electric_arc_furnace_controller",
             () -> new ElectricArcFurnaceControllerBlock(BlockBehaviour.Properties.copy(Blocks.IRON_BLOCK).noOcclusion()));

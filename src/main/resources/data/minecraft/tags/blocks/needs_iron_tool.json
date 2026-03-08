@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "tech_revised:crusher",
+    "tech_revised:windows_7_vm_block",
     "tech_revised:steel_block",
     "tech_revised:stainless_steel_block",
     "tech_revised:chromite_ore",

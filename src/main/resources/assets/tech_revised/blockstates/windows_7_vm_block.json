@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "active=false": { "model": "tech_revised:block/windows_7_vm_block_idle" },
+    "active=true": { "model": "tech_revised:block/windows_7_vm_block" }
+  }
+}

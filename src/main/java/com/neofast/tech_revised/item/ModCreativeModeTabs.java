@@ -25,6 +25,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModBlocks.CHROMITE_ORE.get());
                         output.accept(ModItems.CHROMITE_DUST.get());
                         output.accept(ModBlocks.CRUSHER.get());
+                        output.accept(ModBlocks.WINDOWS_7_VM_BLOCK.get());
                         output.accept(ModBlocks.STEEL_BLOCK.get());
                         output.accept(ModItems.STEEL_INGOT.get());
                         output.accept(ModItems.STEEL_NUGGET.get());

@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "tech_revised:block/steel_frame_normal",
+    "up": "tech_revised:block/steel_frame_normal",
+    "north": "tech_revised:block/input_bus",
+    "south": "tech_revised:block/steel_frame_normal",
+    "west": "tech_revised:block/steel_frame_normal",
+    "east": "tech_revised:block/steel_frame_normal",
+    "particle": "tech_revised:block/steel_frame_normal"
+  }
+}

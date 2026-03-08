@@ -5,12 +5,14 @@ import com.neofast.tech_revised.block.entity.ModBlockEntities;
 import com.neofast.tech_revised.fluid.ModFluids;
 import com.neofast.tech_revised.item.ModCreativeModeTabs;
 import com.neofast.tech_revised.item.ModItems;
+import com.neofast.tech_revised.networking.ModNetworking;
 import com.neofast.tech_revised.recipe.ModRecipes;
 import com.neofast.tech_revised.screen.CrusherScreen;
 import com.neofast.tech_revised.screen.ElectricArcFurnaceControllerScreen;
 import com.neofast.tech_revised.screen.ElectricArcFurnaceInputBusScreen;
 import com.neofast.tech_revised.screen.ElectricArcFurnaceOutputBusScreen;
 import com.neofast.tech_revised.screen.ModMenuTypes;
+import com.neofast.tech_revised.screen.Windows7VmScreen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -43,6 +45,7 @@ public class TechRevised
         ModFluids.register(eventBus);
         ModMenuTypes.register(eventBus);
         ModRecipes.register(eventBus);
+        ModNetworking.register();
 
         eventBus.addListener(this::setup);
         eventBus.addListener(this::clientSetup);
@@ -55,6 +58,7 @@ public class TechRevised
         MenuScreens.register(ModMenuTypes.ELECTRIC_ARC_FURNACE_CONTROLLER_MENU.get(), ElectricArcFurnaceControllerScreen::new);
         MenuScreens.register(ModMenuTypes.ELECTRIC_ARC_FURNACE_INPUT_BUS_MENU.get(), ElectricArcFurnaceInputBusScreen::new);
         MenuScreens.register(ModMenuTypes.ELECTRIC_ARC_FURNACE_OUTPUT_BUS_MENU.get(), ElectricArcFurnaceOutputBusScreen::new);
+        MenuScreens.register(ModMenuTypes.WINDOWS_7_VM_MENU.get(), Windows7VmScreen::new);
         ItemBlockRenderTypes.setRenderLayer(ModFluids.HEAVY_CRUDE_OIL.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(ModFluids.FLOWING_HEAVY_CRUDE_OIL.get(), RenderType.translucent());
         ItemBlockRenderTypes.setRenderLayer(ModFluids.CREOSOTE.get(), RenderType.translucent());

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "tech_revised:block/steel_frame",
+    "front": "minecraft:block/blast_furnace_front_on",
+    "side": "tech_revised:block/steel_frame"
+  }
+}

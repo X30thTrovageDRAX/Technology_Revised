@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond_pickaxe"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "tech_revised:steel_block"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ISI",
+    "RDR"
+  ],
+  "result": {
+    "item": "tech_revised:drilling_platform_drill_head"
+  },
+  "show_notification": true
+}

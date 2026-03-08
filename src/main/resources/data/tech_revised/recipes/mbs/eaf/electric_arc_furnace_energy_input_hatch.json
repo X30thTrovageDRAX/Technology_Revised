@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "F": {
+      "item": "tech_revised:electric_arc_furnace_frame"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "RFR",
+    "IGI"
+  ],
+  "result": {
+    "item": "tech_revised:electric_arc_furnace_energy_input_hatch"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,12 @@
+﻿{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "tech_revised:ferrochromium_block"
+    }
+  ],
+  "result": {
+    "item": "tech_revised:ferrochromium_ingot",
+    "count": 9
+  }
+}

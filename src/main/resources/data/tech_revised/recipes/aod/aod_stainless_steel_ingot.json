@@ -1,0 +1,16 @@
+{
+  "type": "tech_revised:argon_oxygen_decarburization_converter",
+  "energy_per_tick": 80,
+  "oxygen_amount": 500,
+  "primary_input": {
+    "item": "tech_revised:coal_coke"
+  },
+  "process_ticks": 160,
+  "result": {
+    "count": 1,
+    "item": "tech_revised:stainless_steel_ingot"
+  },
+  "secondary_input": {
+    "item": "tech_revised:steel_ingot"
+  }
+}

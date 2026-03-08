@@ -12,19 +12,22 @@ import net.minecraftforge.registries.RegistryObject;
 
 public class ModMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(ForgeRegistries.CONTAINERS, TechRevised.MOD_ID);
+            DeferredRegister.create(ForgeRegistries.MENU_TYPES, TechRevised.MOD_ID);
 
-    public static final RegistryObject<MenuType<WorkbenchTransistorsMenu>> WORKBENCH_TRANSISTORS_MENU =
-            registerMenuType(WorkbenchTransistorsMenu::new, "workbench_transistors_menu");
+    public static final RegistryObject<MenuType<ElectricArcFurnaceControllerMenu>> ELECTRIC_ARC_FURNACE_CONTROLLER_MENU =
+            registerMenuType(ElectricArcFurnaceControllerMenu::new, "electric_arc_furnace_controller_menu");
 
-    public static final RegistryObject<MenuType<WorkbenchTransistors_BasicMenu>> WORKBENCH_TRANSISTORS_BASIC_MENU =
-            registerMenuType(WorkbenchTransistors_BasicMenu::new, "workbench_transistors_basic_menu");
+    public static final RegistryObject<MenuType<ElectricArcFurnaceInputBusMenu>> ELECTRIC_ARC_FURNACE_INPUT_BUS_MENU =
+            registerMenuType(ElectricArcFurnaceInputBusMenu::new, "electric_arc_furnace_input_bus_menu");
 
-    public static final RegistryObject<MenuType<HDD_27KB_Menu>> HDD_27KB_MENU =
-            registerMenuType(HDD_27KB_Menu::new, "hdd_27kb_menu");
+    public static final RegistryObject<MenuType<ElectricArcFurnaceOutputBusMenu>> ELECTRIC_ARC_FURNACE_OUTPUT_BUS_MENU =
+            registerMenuType(ElectricArcFurnaceOutputBusMenu::new, "electric_arc_furnace_output_bus_menu");
 
-    private static <T extends AbstractContainerMenu>RegistryObject<MenuType<T>> registerMenuType(IContainerFactory<T> factory,
-                                                                                                 String name) {
+    public static final RegistryObject<MenuType<CrusherMenu>> CRUSHER_MENU =
+            registerMenuType(CrusherMenu::new, "crusher_menu");
+
+    private static <T extends AbstractContainerMenu> RegistryObject<MenuType<T>> registerMenuType(IContainerFactory<T> factory,
+                                                                                                    String name) {
         return MENUS.register(name, () -> IForgeMenuType.create(factory));
     }
 

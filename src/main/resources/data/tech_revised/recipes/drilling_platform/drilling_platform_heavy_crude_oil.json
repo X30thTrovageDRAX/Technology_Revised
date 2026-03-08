@@ -1,0 +1,9 @@
+{
+  "type": "tech_revised:drilling_platform",
+  "energy_per_tick": 70,
+  "process_ticks": 80,
+  "result_fluid": {
+    "amount": 500,
+    "fluid": "tech_revised:heavy_crude_oil"
+  }
+}

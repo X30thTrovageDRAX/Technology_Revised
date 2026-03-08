@@ -1,0 +1,12 @@
+{
+  "type": "tech_revised:crusher",
+  "energy_per_tick": 20,
+  "ingredient": {
+    "item": "tech_revised:graphite_ore"
+  },
+  "process_ticks": 100,
+  "result": {
+    "count": 1,
+    "item": "tech_revised:graphite_dust"
+  }
+}

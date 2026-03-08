@@ -1,6 +1,29 @@
 {
   "replace": false,
   "values": [
-   "tech_revised:compressed_silicon"
+    "tech_revised:graphite_ore",
+    "tech_revised:chromite_ore",
+    "tech_revised:crusher",
+    "tech_revised:steel_block",
+    "tech_revised:stainless_steel_block",
+    "tech_revised:chromite_block",
+    "tech_revised:ferrochromium_block",
+    "tech_revised:electric_arc_furnace_controller",
+    "tech_revised:electric_arc_furnace_input_bus",
+    "tech_revised:electric_arc_furnace_output_bus",
+    "tech_revised:electric_arc_furnace_fluid_input_bus",
+    "tech_revised:electric_arc_furnace_fluid_output_bus",
+    "tech_revised:electric_arc_furnace_energy_input_hatch",
+    "tech_revised:electric_arc_furnace_heater",
+    "tech_revised:electric_arc_furnace_frame",
+    "tech_revised:drilling_platform_controller",
+    "tech_revised:drilling_platform_drill_head",
+    "tech_revised:drilling_platform_frame",
+    "tech_revised:coke_oven_controller",
+    "tech_revised:coke_oven_frame",
+    "tech_revised:argon_oxygen_decarburization_converter_controller",
+    "tech_revised:argon_oxygen_decarburization_converter_frame",
+    "tech_revised:oxygen_converter_controller",
+    "tech_revised:oxygen_converter_frame"
   ]
 }

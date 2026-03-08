@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "formed=false": { "model": "tech_revised:block/argon_oxygen_decarburization_converter_frame" },
+    "formed=true": { "model": "tech_revised:block/argon_oxygen_decarburization_converter_frame_formed" }
+  }
+}

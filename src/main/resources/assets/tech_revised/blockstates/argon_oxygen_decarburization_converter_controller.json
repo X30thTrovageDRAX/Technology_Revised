@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "tech_revised:block/argon_oxygen_decarburization_converter_controller" },
+    "facing=east": { "model": "tech_revised:block/argon_oxygen_decarburization_converter_controller", "y": 90 },
+    "facing=south": { "model": "tech_revised:block/argon_oxygen_decarburization_converter_controller", "y": 180 },
+    "facing=west": { "model": "tech_revised:block/argon_oxygen_decarburization_converter_controller", "y": 270 }
+  }
+}

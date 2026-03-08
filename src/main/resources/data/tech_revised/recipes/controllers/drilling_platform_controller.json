@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "C": {
+      "item": "minecraft:compass"
+    },
+    "D": {
+      "item": "tech_revised:drilling_platform_drill_head"
+    },
+    "F": {
+      "item": "tech_revised:drilling_platform_frame"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "tech_revised:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SFS",
+    "DCD",
+    "RPR"
+  ],
+  "result": {
+    "item": "tech_revised:drilling_platform_controller"
+  },
+  "show_notification": true
+}

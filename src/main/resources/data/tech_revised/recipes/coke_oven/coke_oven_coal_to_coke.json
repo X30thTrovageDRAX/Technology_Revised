@@ -1,0 +1,15 @@
+{
+  "type": "tech_revised:coke_oven",
+  "ingredient": {
+    "item": "minecraft:coal"
+  },
+  "process_ticks": 200,
+  "result_fluid": {
+    "amount": 500,
+    "fluid": "tech_revised:creosote"
+  },
+  "result_item": {
+    "count": 1,
+    "item": "tech_revised:coal_coke"
+  }
+}

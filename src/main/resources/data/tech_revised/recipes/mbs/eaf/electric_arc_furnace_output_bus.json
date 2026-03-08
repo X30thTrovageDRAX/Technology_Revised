@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "B": {
+      "item": "minecraft:chest"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "F": {
+      "item": "tech_revised:electric_arc_furnace_frame"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "IBI",
+    "IFI"
+  ],
+  "result": {
+    "item": "tech_revised:electric_arc_furnace_output_bus"
+  },
+  "show_notification": true
+}

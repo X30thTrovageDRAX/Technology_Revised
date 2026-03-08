@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "tech_revised:stainless_steel_ingot"
+    }
+  },
+  "result": {
+    "item": "tech_revised:stainless_steel_block"
+  }
+}

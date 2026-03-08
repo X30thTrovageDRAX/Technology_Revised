@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "F": {
+      "item": "tech_revised:electric_arc_furnace_frame"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "WFW",
+    "IRI"
+  ],
+  "result": {
+    "item": "tech_revised:electric_arc_furnace_fluid_input_bus"
+  },
+  "show_notification": true
+}

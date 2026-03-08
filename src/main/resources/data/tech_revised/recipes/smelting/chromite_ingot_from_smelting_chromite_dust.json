@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "tech_revised:chromite_dust"
+  },
+  "result": "tech_revised:chromite_ingot",
+  "experience": 0.7,
+  "cookingtime": 200
+}

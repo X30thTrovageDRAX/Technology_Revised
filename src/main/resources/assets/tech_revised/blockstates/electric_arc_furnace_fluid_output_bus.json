@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "tech_revised:block/electric_arc_furnace_fluid_output_bus" }
+  }
+}

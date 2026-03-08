@@ -1,0 +1,16 @@
+{
+  "type": "tech_revised:electric_arc_furnace",
+  "energy_per_tick": 40,
+  "primary_input": {
+    "item": "minecraft:iron_ingot"
+  },
+  "process_ticks": 100,
+  "result": {
+    "count": 1,
+    "item": "tech_revised:steel_ingot"
+  },
+  "secondary_input": {
+    "item": "minecraft:coal_block"
+  },
+  "water_amount": 250
+}

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "C": {
+      "item": "tech_revised:chromite_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "tech_revised:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SCS",
+    "I I",
+    "SCS"
+  ],
+  "result": {
+    "count": 4,
+    "item": "tech_revised:oxygen_converter_frame"
+  },
+  "show_notification": true
+}

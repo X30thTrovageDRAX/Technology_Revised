@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "C": {
+      "item": "tech_revised:chromite_ingot"
+    },
+    "F": {
+      "item": "tech_revised:argon_oxygen_decarburization_converter_frame"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "tech_revised:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SFS",
+    "CPC",
+    "R R"
+  ],
+  "result": {
+    "item": "tech_revised:argon_oxygen_decarburization_converter_controller"
+  },
+  "show_notification": true
+}

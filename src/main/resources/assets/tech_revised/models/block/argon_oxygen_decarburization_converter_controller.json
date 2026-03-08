@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "tech_revised:block/steel_frame",
+    "front": "tech_revised:block/aod_controller",
+    "side": "tech_revised:block/steel_frame_normal"
+  }
+}

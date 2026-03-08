@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "key": {
+    "F": {
+      "item": "tech_revised:oxygen_converter_frame"
+    },
+    "H": {
+      "item": "tech_revised:electric_arc_furnace_energy_input_hatch"
+    },
+    "I": {
+      "item": "tech_revised:electric_arc_furnace_fluid_input_bus"
+    },
+    "O": {
+      "item": "tech_revised:electric_arc_furnace_fluid_output_bus"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "S": {
+      "item": "tech_revised:steel_ingot"
+    }
+  },
+  "pattern": [
+    "SFS",
+    "IHI",
+    "ROR"
+  ],
+  "result": {
+    "item": "tech_revised:oxygen_converter_controller"
+  },
+  "show_notification": true
+}

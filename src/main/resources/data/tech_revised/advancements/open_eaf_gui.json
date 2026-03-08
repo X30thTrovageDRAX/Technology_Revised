@@ -1,0 +1,23 @@
+{
+  "parent": "minecraft:story/root",
+  "display": {
+    "icon": {
+      "item": "tech_revised:electric_arc_furnace_controller"
+    },
+    "title": {
+      "translate": "advancements.tech_revised.open_eaf_gui.title"
+    },
+    "description": {
+      "translate": "advancements.tech_revised.open_eaf_gui.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "opened_formed_eaf_gui": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

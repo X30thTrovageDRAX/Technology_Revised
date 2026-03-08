@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "items",
+  "pattern": [
+    "S  ",
+    " S ",
+    "  S"
+  ],
+  "key": {
+    "S": {
+      "item": "tech_revised:steel_ingot"
+    }
+  },
+  "result": {
+    "item": "tech_revised:electrode"
+  },
+  "show_notification": true
+}

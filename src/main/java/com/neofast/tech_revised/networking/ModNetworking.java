@@ -4,7 +4,9 @@ import com.neofast.tech_revised.TechRevised;
 import com.neofast.tech_revised.networking.packet.RequestVmScreenshotPacket;
 import com.neofast.tech_revised.networking.packet.SaveVmConfigPacket;
 import com.neofast.tech_revised.networking.packet.VmKeyboardInputPacket;
+import com.neofast.tech_revised.networking.packet.VmMouseInputPacket;
 import com.neofast.tech_revised.networking.packet.VmScreenshotPacket;
+import com.neofast.tech_revised.networking.packet.VmStreamControlPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -52,6 +54,20 @@ public final class ModNetworking {
                 VmKeyboardInputPacket::encode,
                 VmKeyboardInputPacket::decode,
                 VmKeyboardInputPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                VmStreamControlPacket.class,
+                VmStreamControlPacket::encode,
+                VmStreamControlPacket::decode,
+                VmStreamControlPacket::handle
+        );
+        CHANNEL.registerMessage(
+                packetId++,
+                VmMouseInputPacket.class,
+                VmMouseInputPacket::encode,
+                VmMouseInputPacket::decode,
+                VmMouseInputPacket::handle
         );
     }
 }

@@ -5,14 +5,16 @@ import com.neofast.tech_revised.TechRevised;
 import com.neofast.tech_revised.client.VmScreenClientState;
 import com.neofast.tech_revised.integration.vm.VmCommandIntegration;
 import com.neofast.tech_revised.networking.ModNetworking;
-import com.neofast.tech_revised.networking.packet.RequestVmScreenshotPacket;
 import com.neofast.tech_revised.networking.packet.SaveVmConfigPacket;
 import com.neofast.tech_revised.networking.packet.VmKeyboardInputPacket;
+import com.neofast.tech_revised.networking.packet.VmMouseInputPacket;
+import com.neofast.tech_revised.networking.packet.VmStreamControlPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,11 +39,12 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
     private Button refreshButton;
     private Button closeButton;
     private ResourceLocation previewTextureLocation;
+    private DynamicTexture previewTexture;
     private int previewTextureWidth = 1;
     private int previewTextureHeight = 1;
     private long lastPreviewUpdateId = -1L;
     private String previewStatus = "";
-    private int refreshTicks = 0;
+    private boolean liveStreamActive = false;
     private boolean vmFullscreen = false;
     private boolean previewFocused = false;
     private int previewAreaX = 0;
@@ -95,7 +98,7 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
 
         refreshButton = Button.builder(
                         Component.translatable("screen.tech_revised.vm.button.refresh"),
-                        button -> requestScreenshot())
+                        button -> restartLiveStream())
                 .bounds(left + 58, this.topPos + 156, 54, 20)
                 .build();
         addRenderableWidget(refreshButton);
@@ -107,12 +110,14 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
                 .build();
         addRenderableWidget(closeButton);
 
-        previewStatus = Component.translatable("screen.tech_revised.vm.preview.waiting").getString();
+        VmScreenClientState.clear(menu.getBlockPos());
+        lastPreviewUpdateId = -1L;
+        previewStatus = Component.translatable("screen.tech_revised.vm.preview.connecting").getString();
         vmFullscreen = false;
         previewFocused = false;
         setConfigWidgetsVisible(true);
         updatePreviewArea();
-        requestScreenshot();
+        startLiveStream();
         setInitialFocus(vmNameBox);
     }
 
@@ -123,13 +128,6 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
             vmNameBox.tick();
             startCommandBox.tick();
             stopCommandBox.tick();
-        }
-
-        pollScreenshotUpdate();
-
-        if (--refreshTicks <= 0) {
-            requestScreenshot();
-            refreshTicks = vmFullscreen ? 8 : 40;
         }
     }
 
@@ -230,8 +228,14 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
             startCommandBox.setFocused(false);
             stopCommandBox.setFocused(false);
             setFocused(null);
-            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                previewStatus = Component.translatable("screen.tech_revised.vm.preview.mouse_not_supported").getString();
+            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT
+                    || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT
+                    || button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
+                if (sendMouseClickToVm(mouseX, mouseY, button)) {
+                    previewStatus = Component.translatable("screen.tech_revised.vm.preview.mouse_click_sent").getString();
+                } else {
+                    previewStatus = Component.translatable("screen.tech_revised.vm.preview.mouse_click_unavailable").getString();
+                }
             }
             return true;
         }
@@ -292,6 +296,7 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        pollScreenshotUpdate();
         renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, delta);
         if (vmFullscreen) {
@@ -312,6 +317,7 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
 
     @Override
     public void removed() {
+        stopLiveStream();
         releasePreviewTexture();
         super.removed();
     }
@@ -324,9 +330,28 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
                 stopCommandBox.getValue()));
     }
 
-    private void requestScreenshot() {
-        previewStatus = Component.translatable("screen.tech_revised.vm.preview.requesting").getString();
-        ModNetworking.CHANNEL.sendToServer(new RequestVmScreenshotPacket(menu.getBlockPos()));
+    private void startLiveStream() {
+        if (liveStreamActive) {
+            return;
+        }
+        ModNetworking.CHANNEL.sendToServer(new VmStreamControlPacket(menu.getBlockPos(), true));
+        liveStreamActive = true;
+    }
+
+    private void stopLiveStream() {
+        if (!liveStreamActive) {
+            return;
+        }
+        ModNetworking.CHANNEL.sendToServer(new VmStreamControlPacket(menu.getBlockPos(), false));
+        liveStreamActive = false;
+    }
+
+    private void restartLiveStream() {
+        stopLiveStream();
+        VmScreenClientState.clear(menu.getBlockPos());
+        lastPreviewUpdateId = -1L;
+        previewStatus = Component.translatable("screen.tech_revised.vm.preview.connecting").getString();
+        startLiveStream();
     }
 
     private void pollScreenshotUpdate() {
@@ -345,34 +370,65 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
     }
 
     private void updatePreviewTexture(byte[] imageBytes) {
+        NativeImage image = null;
         try (ByteArrayInputStream stream = new ByteArrayInputStream(imageBytes)) {
-            NativeImage image = NativeImage.read(stream);
+            image = NativeImage.read(stream);
             if (image == null) {
                 previewStatus = Component.translatable("screen.tech_revised.vm.preview.decode_failed").getString();
                 releasePreviewTexture();
                 return;
             }
 
-            if (previewTextureLocation == null) {
-                previewTextureLocation = new ResourceLocation(TechRevised.MOD_ID, "vm_preview/" + UUID.randomUUID());
-            } else {
-                Minecraft.getInstance().getTextureManager().release(previewTextureLocation);
+            int imageWidth = Math.max(1, image.getWidth());
+            int imageHeight = Math.max(1, image.getHeight());
+            NativeImage previewPixels = previewTexture == null ? null : previewTexture.getPixels();
+
+            if (previewPixels == null
+                    || previewTextureWidth != imageWidth
+                    || previewTextureHeight != imageHeight) {
+                rebuildPreviewTexture(image, imageWidth, imageHeight);
+                image = null; // ownership transferred to DynamicTexture
+                return;
             }
 
-            DynamicTexture texture = new DynamicTexture(image);
-            previewTextureWidth = Math.max(1, image.getWidth());
-            previewTextureHeight = Math.max(1, image.getHeight());
-            Minecraft.getInstance().getTextureManager().register(previewTextureLocation, texture);
+            previewPixels.copyFrom(image);
+            previewTexture.upload();
         } catch (Exception exception) {
             previewStatus = Component.translatable("screen.tech_revised.vm.preview.decode_failed").getString();
             releasePreviewTexture();
+        } finally {
+            if (image != null) {
+                image.close();
+            }
         }
+    }
+
+    private void rebuildPreviewTexture(NativeImage image, int imageWidth, int imageHeight) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (previewTextureLocation == null) {
+            previewTextureLocation = new ResourceLocation(TechRevised.MOD_ID, "vm_preview/" + UUID.randomUUID());
+        } else {
+            minecraft.getTextureManager().release(previewTextureLocation);
+            if (previewTexture != null) {
+                previewTexture.close();
+                previewTexture = null;
+            }
+        }
+
+        previewTexture = new DynamicTexture(image);
+        previewTextureWidth = imageWidth;
+        previewTextureHeight = imageHeight;
+        minecraft.getTextureManager().register(previewTextureLocation, previewTexture);
     }
 
     private void releasePreviewTexture() {
         if (previewTextureLocation != null) {
             Minecraft.getInstance().getTextureManager().release(previewTextureLocation);
             previewTextureLocation = null;
+        }
+        if (previewTexture != null) {
+            previewTexture.close();
+            previewTexture = null;
         }
     }
 
@@ -395,11 +451,54 @@ public class Windows7VmScreen extends AbstractContainerScreen<Windows7VmMenu> {
         }
     }
 
+    private boolean sendMouseClickToVm(double mouseX, double mouseY, int button) {
+        if (previewTextureLocation == null || previewTextureWidth <= 0 || previewTextureHeight <= 0) {
+            return false;
+        }
+
+        if (previewDrawWidth <= 0 || previewDrawHeight <= 0) {
+            return false;
+        }
+
+        if (mouseX < previewDrawX || mouseX >= previewDrawX + previewDrawWidth
+                || mouseY < previewDrawY || mouseY >= previewDrawY + previewDrawHeight) {
+            return false;
+        }
+
+        int buttonMask = switch (button) {
+            case GLFW.GLFW_MOUSE_BUTTON_LEFT -> 1;
+            case GLFW.GLFW_MOUSE_BUTTON_RIGHT -> 2;
+            case GLFW.GLFW_MOUSE_BUTTON_MIDDLE -> 4;
+            default -> 0;
+        };
+        if (buttonMask == 0) {
+            return false;
+        }
+
+        double localX = mouseX - previewDrawX;
+        double localY = mouseY - previewDrawY;
+        double normalizedX = previewDrawWidth <= 1 ? 0.0D : localX / (double) (previewDrawWidth - 1);
+        double normalizedY = previewDrawHeight <= 1 ? 0.0D : localY / (double) (previewDrawHeight - 1);
+        normalizedX = Math.max(0.0D, Math.min(1.0D, normalizedX));
+        normalizedY = Math.max(0.0D, Math.min(1.0D, normalizedY));
+
+        int vmX = previewTextureWidth <= 1 ? 0 : (int) Math.round(normalizedX * (previewTextureWidth - 1));
+        int vmY = previewTextureHeight <= 1 ? 0 : (int) Math.round(normalizedY * (previewTextureHeight - 1));
+        vmX = Math.max(0, vmX);
+        vmY = Math.max(0, vmY);
+
+        ModNetworking.CHANNEL.sendToServer(new VmMouseInputPacket(menu.getBlockPos(), vmX, vmY, buttonMask));
+        return true;
+    }
+
+    public Rect2i getJeiExclusionArea() {
+        return new Rect2i(0, 0, this.width, this.height);
+    }
+
     private void toggleVmFullscreen() {
         vmFullscreen = !vmFullscreen;
         setConfigWidgetsVisible(!vmFullscreen);
         updatePreviewArea();
-        refreshTicks = 0;
 
         if (vmFullscreen) {
             previewFocused = true;

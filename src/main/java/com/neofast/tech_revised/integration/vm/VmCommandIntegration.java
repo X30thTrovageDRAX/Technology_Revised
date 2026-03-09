@@ -86,6 +86,16 @@ public final class VmCommandIntegration {
     private static final String DEFAULT_STOP_TEMPLATE = "\"" + VBOXMANAGE_PLACEHOLDER + "\" controlvm \"{vmName}\" acpipowerbutton";
     private static final String VBOX_PATH_PROGRAM_FILES = "C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe";
     private static final String VBOX_PATH_PROGRAM_FILES_X86 = "C:\\Program Files (x86)\\Oracle\\VirtualBox\\VBoxManage.exe";
+    private static final int MAX_SCREENSHOT_BYTES = Integer.getInteger("tech_revised.vm.maxScreenshotBytes", 2_000_000);
+    private static final ThreadLocal<Path> SCREENSHOT_PATH_CACHE = ThreadLocal.withInitial(() -> {
+        try {
+            Path path = Files.createTempFile("tech_revised_vm_", ".png");
+            path.toFile().deleteOnExit();
+            return path;
+        } catch (Exception ignored) {
+            return null;
+        }
+    });
 
     private VmCommandIntegration() {
     }
@@ -172,6 +182,34 @@ public final class VmCommandIntegration {
         });
     }
 
+    public static void sendMouseClickAsync(String localVmName, String localStartTemplate, String localStopTemplate,
+                                           int absoluteX, int absoluteY, int buttonMask) {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        if (!osName.contains("win")) {
+            return;
+        }
+
+        if ((buttonMask & 0x07) == 0) {
+            return;
+        }
+
+        String vmName = resolveVmName(localVmName);
+        int clampedX = Math.max(0, Math.min(65535, absoluteX));
+        int clampedY = Math.max(0, Math.min(65535, absoluteY));
+        int sanitizedMask = buttonMask & 0x07;
+
+        EXECUTOR.submit(() -> {
+            try {
+                CommandResult result = runPowerShell(mouseClickScript(vmName, clampedX, clampedY, sanitizedMask), 8);
+                if (result.exitCode() != 0) {
+                    LOGGER.debug("Failed to send mouse click to VM '{}': {}", vmName, result.outputPreview());
+                }
+            } catch (Exception exception) {
+                LOGGER.debug("Failed to send mouse click to VM '{}': {}", vmName, exception.getMessage());
+            }
+        });
+    }
+
     public static void captureScreenshotAsync(String localVmName, String localStartTemplate, String localStopTemplate,
                                               Consumer<VmScreenshotResult> callback) {
         String vmName = resolveVmName(localVmName);
@@ -179,13 +217,24 @@ public final class VmCommandIntegration {
 
         EXECUTOR.submit(() -> {
             try {
-                VmScreenshotResult result = captureScreenshot(vmName, vboxExecutable);
+                VmScreenshotResult result = captureScreenshot(vmName, vboxExecutable, true);
                 callback.accept(result);
             } catch (Exception exception) {
                 LOGGER.error("VM screenshot capture failed.", exception);
                 callback.accept(new VmScreenshotResult(false, "Screenshot error: " + exception.getMessage(), new byte[0]));
             }
         });
+    }
+
+    public static VmScreenshotResult captureScreenshotNow(String localVmName, String localStartTemplate, String localStopTemplate) {
+        String vmName = resolveVmName(localVmName);
+        String vboxExecutable = resolveVBoxManageExecutable(localStartTemplate, localStopTemplate);
+        try {
+            // Live stream path: skip expensive VM state query for lower frame latency.
+            return captureScreenshot(vmName, vboxExecutable, false);
+        } catch (Exception exception) {
+            return new VmScreenshotResult(false, "Screenshot error: " + exception.getMessage(), new byte[0]);
+        }
     }
 
     public static void executeAction(ServerLevel level, BlockPos pos, ServerPlayer player, VmAction action) {
@@ -286,43 +335,48 @@ public final class VmCommandIntegration {
         return action == VmAction.START ? getConfiguredStartTemplate() : getConfiguredStopTemplate();
     }
 
-    private static VmScreenshotResult captureScreenshot(String vmName, String vboxExecutable) throws Exception {
-        String vmState = queryVmState(vmName, vboxExecutable);
-        if (!isActiveVmState(vmState)) {
-            return new VmScreenshotResult(false,
-                    "VM is not running (state: " + (vmState.isEmpty() ? "unknown" : vmState) + ").",
-                    new byte[0]);
-        }
-
-        Path screenshotPath = Files.createTempFile("tech_revised_vm_", ".png");
-
-        try {
-            CommandResult result = runVBoxManage(vboxExecutable,
-                    List.of("controlvm", vmName, "screenshotpng", screenshotPath.toAbsolutePath().toString()),
-                    12);
-            if (result.exitCode() != 0) {
-                return new VmScreenshotResult(false, result.outputPreview(), new byte[0]);
-            }
-
-            if (!Files.exists(screenshotPath)) {
-                return new VmScreenshotResult(false, "Screenshot file was not created.", new byte[0]);
-            }
-
-            byte[] imageBytes = Files.readAllBytes(screenshotPath);
-            if (imageBytes.length == 0) {
-                return new VmScreenshotResult(false, "Screenshot is empty.", new byte[0]);
-            }
-            if (imageBytes.length > 2_000_000) {
-                return new VmScreenshotResult(false, "Screenshot too large (" + imageBytes.length + " bytes).", new byte[0]);
-            }
-
-            return new VmScreenshotResult(true, "OK", imageBytes);
-        } finally {
-            try {
-                Files.deleteIfExists(screenshotPath);
-            } catch (Exception ignored) {
+    private static VmScreenshotResult captureScreenshot(String vmName, String vboxExecutable,
+                                                        boolean verifyVmState) throws Exception {
+        if (verifyVmState) {
+            String vmState = queryVmState(vmName, vboxExecutable);
+            if (!isActiveVmState(vmState)) {
+                return new VmScreenshotResult(false,
+                        "VM is not running (state: " + (vmState.isEmpty() ? "unknown" : vmState) + ").",
+                        new byte[0]);
             }
         }
+
+        Path screenshotPath = screenshotPath();
+        CommandResult result = runVBoxManage(vboxExecutable,
+                List.of("controlvm", vmName, "screenshotpng", screenshotPath.toAbsolutePath().toString()),
+                12);
+        if (result.exitCode() != 0) {
+            return new VmScreenshotResult(false, result.outputPreview(), new byte[0]);
+        }
+
+        if (!Files.exists(screenshotPath)) {
+            return new VmScreenshotResult(false, "Screenshot file was not created.", new byte[0]);
+        }
+
+        byte[] imageBytes = Files.readAllBytes(screenshotPath);
+        if (imageBytes.length == 0) {
+            return new VmScreenshotResult(false, "Screenshot is empty.", new byte[0]);
+        }
+        if (imageBytes.length > MAX_SCREENSHOT_BYTES) {
+            return new VmScreenshotResult(false, "Screenshot too large (" + imageBytes.length + " bytes).", new byte[0]);
+        }
+
+        return new VmScreenshotResult(true, "OK", imageBytes);
+    }
+
+    private static Path screenshotPath() throws Exception {
+        Path cachedPath = SCREENSHOT_PATH_CACHE.get();
+        if (cachedPath != null) {
+            return cachedPath;
+        }
+        Path fallbackPath = Files.createTempFile("tech_revised_vm_", ".png");
+        fallbackPath.toFile().deleteOnExit();
+        return fallbackPath;
     }
 
     private static ActionExecution executeStop(String stopCommand) throws Exception {
@@ -411,6 +465,21 @@ public final class VmCommandIntegration {
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
+        return collectProcessOutput(process, maxOutputLines);
+    }
+
+    private static CommandResult runPowerShell(String script, int maxOutputLines) throws Exception {
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "powershell.exe",
+                "-NoProfile",
+                "-NonInteractive",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                script
+        );
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
         return collectProcessOutput(process, maxOutputLines);
     }
 
@@ -601,6 +670,21 @@ public final class VmCommandIntegration {
             return "VBoxManage";
         }
         return sanitized;
+    }
+
+    private static String mouseClickScript(String vmName, int absoluteX, int absoluteY, int buttonMask) {
+        String escapedVmName = vmName.replace("'", "''");
+        return "$ErrorActionPreference='Stop';"
+                + "$vbox=New-Object -ComObject VirtualBox.VirtualBox;"
+                + "$session=New-Object -ComObject VirtualBox.Session;"
+                + "$machine=$vbox.FindMachine('" + escapedVmName + "');"
+                + "$machine.LockMachine($session,1);"
+                + "try{"
+                + "$mouse=$session.Console.Mouse;"
+                + "$mouse.PutMouseEventAbsolute(" + absoluteX + "," + absoluteY + ",0,0," + buttonMask + ")|Out-Null;"
+                + "Start-Sleep -Milliseconds 20;"
+                + "$mouse.PutMouseEventAbsolute(" + absoluteX + "," + absoluteY + ",0,0,0)|Out-Null;"
+                + "}finally{$session.UnlockMachine();}";
     }
 
     private static void setBlockActiveState(ServerLevel level, BlockPos pos, boolean active) {

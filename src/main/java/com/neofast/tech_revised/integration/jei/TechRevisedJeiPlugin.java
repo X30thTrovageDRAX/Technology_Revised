@@ -14,6 +14,8 @@ import com.neofast.tech_revised.screen.ElectricArcFurnaceControllerScreen;
 import com.neofast.tech_revised.screen.ElectricArcFurnaceInputBusMenu;
 import com.neofast.tech_revised.screen.ElectricArcFurnaceInputBusScreen;
 import com.neofast.tech_revised.screen.ModMenuTypes;
+import com.neofast.tech_revised.screen.Windows7VmScreen;
+import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
@@ -304,5 +306,12 @@ public class TechRevisedJeiPlugin implements IModPlugin {
         registration.addRecipeClickArea(CrusherScreen.class,
                 56, 34, 60, 18,
                 CrusherJeiCategory.RECIPE_TYPE);
+
+        registration.addGuiContainerHandler(Windows7VmScreen.class, new IGuiContainerHandler<>() {
+            @Override
+            public List<net.minecraft.client.renderer.Rect2i> getGuiExtraAreas(Windows7VmScreen containerScreen) {
+                return List.of(containerScreen.getJeiExclusionArea());
+            }
+        });
     }
 }

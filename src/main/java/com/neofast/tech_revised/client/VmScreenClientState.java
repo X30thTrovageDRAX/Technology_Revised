@@ -14,12 +14,18 @@ public final class VmScreenClientState {
     }
 
     public static void update(BlockPos blockPos, boolean success, String message, byte[] imageBytes) {
-        byte[] copy = imageBytes == null ? new byte[0] : imageBytes.clone();
-        FRAMES.put(blockPos.immutable(), new VmFrameData(success, message, copy, NEXT_UPDATE_ID.getAndIncrement()));
+        byte[] bytes = imageBytes == null ? new byte[0] : imageBytes;
+        FRAMES.put(blockPos.immutable(), new VmFrameData(success, message, bytes, NEXT_UPDATE_ID.getAndIncrement()));
     }
 
     public static VmFrameData get(BlockPos blockPos) {
         return FRAMES.get(blockPos);
+    }
+
+    public static void clear(BlockPos blockPos) {
+        if (blockPos != null) {
+            FRAMES.remove(blockPos);
+        }
     }
 
     public record VmFrameData(boolean success, String message, byte[] imageBytes, long updateId) {
